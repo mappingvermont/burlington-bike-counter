@@ -27,7 +27,7 @@ display = framebufferio.FramebufferDisplay(matrix, auto_refresh=True)
 
 palette = displayio.Palette(2)
 palette[0] = 0x000000
-palette[1] = 0xFFB300  # amber
+palette[1] = 0xFF4400  # orange
 
 bitmap = displayio.Bitmap(64, 32, 2)
 group  = displayio.Group()
@@ -37,8 +37,8 @@ display.root_group = group
 # ── 7-segment renderer ─────────────────────────────────────────────────────────
 
 DW = 12   # digit width
-DH = 26   # digit height
-ST = 2    # segment thickness
+DH = 30   # digit height
+ST = 3    # segment thickness
 GX = 4    # gap between digits
 
 #        a  b  c  d  e  f  g
@@ -63,13 +63,13 @@ def _rect(x, y, w, h):
 def _digit(ox, oy, n):
     a, b, c, d, e, f, g = SEG[n]
     m = DH // 2
-    if a: _rect(ox + 1,      oy,          DW - 2, ST)    # top
-    if b: _rect(ox + DW - ST, oy + 1,     ST,     m - 1) # top-right
-    if c: _rect(ox + DW - ST, oy + m,     ST,     m - 1) # bot-right
-    if d: _rect(ox + 1,      oy + DH - ST, DW - 2, ST)   # bottom
-    if e: _rect(ox,          oy + m,      ST,     m - 1) # bot-left
-    if f: _rect(ox,          oy + 1,      ST,     m - 1) # top-left
-    if g: _rect(ox + 1,      oy + m - 1,  DW - 2, ST)    # middle
+    if a: _rect(ox + 1,       oy,       DW - 2, ST) # top
+    if b: _rect(ox + DW - ST, oy,       ST,     m)  # top-right
+    if c: _rect(ox + DW - ST, oy + m,   ST,     m)  # bot-right
+    if d: _rect(ox + 1,       oy + DH - ST, DW - 2, ST) # bottom
+    if e: _rect(ox,           oy + m,   ST,     m)  # bot-left
+    if f: _rect(ox,           oy,       ST,     m)  # top-left
+    if g: _rect(ox + 1,       oy + m - 1, DW - 2, ST) # middle
 
 def render(n):
     bitmap.fill(0)
@@ -103,12 +103,15 @@ render(0)
 current = 0
 
 while True:
-    for entry in _bleio.adapter.start_scan(
-        minimum_rssi=-90,
-        active=False,
-        timeout=2.0,
-    ):
-        count = _read_count(bytes(entry.advertisement_bytes))
-        if count is not None and count != current:
-            current = count
-            render(current)
+    try:
+        for entry in _bleio.adapter.start_scan(
+            minimum_rssi=-90,
+            active=False,
+            timeout=2.0,
+        ):
+            count = _read_count(bytes(entry.advertisement_bytes))
+            if count is not None and count != current:
+                current = count
+                render(current)
+    except _bleio.BluetoothError:
+        _bleio.adapter.stop_scan()

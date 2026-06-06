@@ -15,8 +15,8 @@
 - [x] Write detection firmware (threshold logic + two-pulse pairing → one bike count)
 - [x] Verify BLE is broadcasting and display receives count increments
 - [x] Insert SD card and verify logging
-- [ ] Solder DS3231 stacking headers and re-integrate RTC timestamps
-- [ ] Update code to log timestamps
+- [x] Solder DS3231 stacking headers and re-integrate RTC timestamps
+- [x] Update code to log timestamps
 
 ---
 

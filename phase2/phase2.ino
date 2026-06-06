@@ -6,11 +6,14 @@
 #include <bluefruit.h>
 #include <SPI.h>
 #include <SD.h>
+#include <RTClib.h>
 
 const int THRESHOLD    = 65;
 const int MIN_PULSE_MS = 5;
 const int MIN_PAIR_GAP = 200;
 const int MAX_PAIR_GAP = 1500;
+
+RTC_DS3231 rtc;
 
 File f;
 int bikeCount = 0;
@@ -33,8 +36,12 @@ void advertise() {
 }
 
 void logEvent(const char* type, int peak) {
+  DateTime now = rtc.now();
   char buf[64];
-  snprintf(buf, sizeof(buf), "%lu,%s,%d,%d\n", millis(), type, peak, bikeCount);
+  snprintf(buf, sizeof(buf), "%04d-%02d-%02dT%02d:%02d:%02d,%s,%d,%d\n",
+    now.year(), now.month(), now.day(),
+    now.hour(), now.minute(), now.second(),
+    type, peak, bikeCount);
   f.print(buf);
   f.flush();
   Serial.print(buf);
@@ -49,16 +56,25 @@ void setup() {
   Bluefruit.setTxPower(4);
   advertise();
   Serial.println("setup: BLE ok");
-  SD.begin(10);
+  if (!rtc.begin()) {
+    Serial.println("setup: RTC not found — halting");
+    while (1) delay(10);
+  }
+  Serial.println("setup: RTC ok");
+  if (!SD.begin(10)) {
+    Serial.println("setup: SD init failed — halting");
+    while (1) delay(10);
+  }
   f = SD.open("counts.csv", FILE_WRITE);
-  f.println("ms,event,peak,count");
+  f.println("datetime,event,peak,count");
+  f.flush();
   Serial.println("setup: SD ok — ready");
 }
 
 void loop() {
   unsigned long now = millis();
   int val = analogRead(A0);
-  bool above = val > THRESHOLD;
+bool above = val > THRESHOLD;
 
   switch (state) {
 
