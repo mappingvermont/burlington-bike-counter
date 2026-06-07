@@ -27,7 +27,7 @@ display = framebufferio.FramebufferDisplay(matrix, auto_refresh=True)
 
 palette = displayio.Palette(2)
 palette[0] = 0x000000
-palette[1] = 0xFF4400  # orange
+palette[1] = 0xFFAA00  # amber — brighter than orange for outdoor visibility
 
 bitmap = displayio.Bitmap(64, 32, 2)
 group  = displayio.Group()

@@ -9,8 +9,8 @@
 #include <RTClib.h>
 
 const int THRESHOLD    = 65;
-const int MIN_PULSE_MS = 5;
-const int MIN_PAIR_GAP = 200;
+const int MIN_PULSE_MS = 2;   // 5ms calibrated at slow speed; 2ms supports fast riders
+const int MIN_PAIR_GAP = 70;  // 70ms = 30mph ceiling with 95cm wheelbase; bounces top out at ~22ms so safe
 const int MAX_PAIR_GAP = 1500;
 
 RTC_DS3231 rtc;
