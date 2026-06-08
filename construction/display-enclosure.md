@@ -69,8 +69,6 @@ Waterproof, tamper-resistant PVC enclosure for the 64×32 RGB LED panel (Matrix 
 |------|-----|------|-------|
 | Waterproof USB-C panel mount, IP67 | 1 | [B09QLR3ZG6](https://www.amazon.com/ANMBEST-Mounting-Waterproof-Connector-PA6BG33/dp/B09QLR3ZG6) | Bottom of enclosure, charging port |
 | Silica gel desiccant packets | 2–3 | [B0CGHY9VWC](https://www.amazon.com/gp/product/B0CGHY9VWC/) | Inside display enclosure |
-| Steel security cable | 1 | [B00FZDQK4W](https://www.amazon.com/gp/product/B00FZDQK4W/) | Secure sensor to fence |
-| Pelican Micro Case | 1 | [B0C73J83C1](https://www.amazon.com/dp/B0C73J83C1/) | Sensor enclosure |
 
 **Already have:** polycarbonate front panel
 

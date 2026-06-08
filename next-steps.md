@@ -56,3 +56,4 @@
 
 - How to anchor the sensor box so it isn't displaced by traffic or weather
 - Display mounting location and orientation
+- Sensor box tamper resistance — option: hide in vegetation on the far side of the path (tube already spans full width, so box can sit in undergrowth out of sight)
