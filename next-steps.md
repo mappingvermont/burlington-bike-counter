@@ -22,38 +22,28 @@
 
 ## Stage 3 — Enclosure Preparation
 
-*Requires: enclosure (#905), PG-9 glands (#761), panel mount USB cable (#4056), step drill bit*
-
-- [ ] Drill 20mm hole on one short end (near bottom) for PG-9 tube gland
-- [ ] Drill mounting holes + cutout on opposite short end for panel mount USB-C socket
-- [ ] Thread tube through gland before connecting to sensor
+- [ ] Build display enclosure (PVC, PVC cement)
+- [ ] Figure out ESP32 and battery mounts
+- [ ] Test display enclosure outside
+- [ ] Investigate options to hide sensor box and lock it
+- [ ] Order sensor box
+- [ ] Drill hole in sensor box to allow tube through
 
 ---
 
-## Stage 4 — Final Assembly
+## Stage 4 — Hardening
 
-- [ ] Mount Feather stack in enclosure using M4 standoffs
-- [ ] Align sensor barb with tube entry
-- [ ] Press tube onto sensor barb (add cable tie if fit feels loose)
-- [ ] Plug in LiPo battery (JST-PH)
-- [ ] Connect panel mount cable to Feather Micro-USB port
-- [ ] Seal around panel mount cable with silicone sealant
-- [ ] Close and hand-tighten lid evenly
+- [ ] Add eye bolts and lock + hasp to display
+- [ ] Screw in display side panel using tamper resistant screws
+- [ ] Seal everything with silicone sealant
+- [ ] Silica packets everywhere
 
 ---
 
 ## Stage 5 — Deployment
 
 - [ ] Lay tube across bike lane, taut and flat
-- [ ] Secure every ~30cm with duct tape or ground staples
-- [ ] Cap far end (4.2mm machine screw + zip tie)
-- [ ] Mount enclosure to post or ground stake at lane edge
+- [ ] Mount and lock display enclosure on fence
+- [ ] Install sensor enclosure + lock
 - [ ] Power on — confirm display increments when bike rolls over tube
 
----
-
-## Open Questions
-
-- How to anchor the sensor box so it isn't displaced by traffic or weather
-- Display mounting location and orientation
-- Sensor box tamper resistance — option: hide in vegetation on the far side of the path (tube already spans full width, so box can sit in undergrowth out of sight)
