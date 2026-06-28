@@ -188,6 +188,34 @@ Work lowest-profile to tallest, and handle shared holes as a unit.
 
 ---
 
+## Flashing Firmware
+
+Requires `arduino-cli` (`brew install arduino-cli`). The Adafruit nRF52 core and SD library must be installed:
+
+```bash
+arduino-cli core install adafruit:nrf52
+arduino-cli lib install "SD"
+```
+
+Connect the Feather via USB-C → Micro-USB. The port will appear as `/dev/cu.usbmodem101` (or similar).
+
+**Compile:**
+```bash
+arduino-cli compile --fqbn adafruit:nrf52:feather52840 phase2/phase2.ino
+```
+
+**Upload:**
+```bash
+arduino-cli upload --fqbn adafruit:nrf52:feather52840 --port /dev/cu.usbmodem101 phase2/phase2.ino
+```
+
+**Monitor serial output:**
+```bash
+arduino-cli monitor --port /dev/cu.usbmodem101 --config baudrate=115200
+```
+
+---
+
 ## Files
 
 - [`bike_counter.ino`](bike_counter.ino) — Arduino firmware for the nRF52840 sensor unit

@@ -11,7 +11,7 @@
 const int THRESHOLD    = 65;
 const int MIN_PULSE_MS = 2;   // 5ms calibrated at slow speed; 2ms supports fast riders
 const int MIN_PAIR_GAP = 70;  // 70ms = 30mph ceiling with 95cm wheelbase; bounces top out at ~22ms so safe
-const int MAX_PAIR_GAP = 1500;
+const int MAX_PAIR_GAP = 500;
 
 RTC_DS3231 rtc;
 
@@ -21,8 +21,10 @@ int bikeCount = 0;
 enum State { IDLE, IN_PULSE_1, BETWEEN, IN_PULSE_2 };
 State state = IDLE;
 
-unsigned long pulseStart = 0;
-unsigned long pulse1End  = 0;
+unsigned long pulseStart  = 0;
+unsigned long pulse1End   = 0;
+unsigned long lastCount   = 0;
+const int COOLDOWN_MS     = 200;
 int pulsePeak = 0;
 
 void advertise() {
@@ -71,15 +73,31 @@ void setup() {
   Serial.println("setup: SD ok — ready");
 }
 
+int lastResetMinute = -1;
+unsigned long lastResetCheck = 0;
+
+void checkReset(unsigned long now) {
+  if (now - lastResetCheck < 1800000) return;
+  lastResetCheck = now;
+  DateTime t = rtc.now();
+  if (t.hour() == 0 && t.minute() == 0 && lastResetMinute != 0) {
+    lastResetMinute = 0;
+    bikeCount = 0;
+    advertise();
+    logEvent("reset", 0);
+  }
+}
+
 void loop() {
   unsigned long now = millis();
   int val = analogRead(A0);
-bool above = val > THRESHOLD;
+  bool above = val > THRESHOLD;
+  checkReset(now);
 
   switch (state) {
 
     case IDLE:
-      if (above) {
+      if (above && (now - lastCount >= COOLDOWN_MS)) {
         state      = IN_PULSE_1;
         pulseStart = now;
         pulsePeak  = val;
@@ -101,7 +119,10 @@ bool above = val > THRESHOLD;
 
     case BETWEEN:
       if (now - pulse1End > MAX_PAIR_GAP) {
-        logEvent("unpaired", pulsePeak);
+        bikeCount++;
+        lastCount = now;
+        advertise();
+        logEvent("single", pulsePeak);
         state = IDLE;
       } else if (above && (now - pulse1End >= MIN_PAIR_GAP)) {
         state      = IN_PULSE_2;
@@ -116,6 +137,7 @@ bool above = val > THRESHOLD;
       } else {
         if (now - pulseStart >= MIN_PULSE_MS) {
           bikeCount++;
+          lastCount = now;
           advertise();
           logEvent("bike", pulsePeak);
           state = IDLE;

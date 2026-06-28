@@ -32,6 +32,10 @@
 
 ## Stage 4 — Hardening
 
+- [ ] General refactor / simplification of code
+- [ ] Tests (??)
+- [ ] Improve energy management for both sensor and display
+- [ ] Update display to turn off between 10 PM and 6 AM
 - [ ] Screw in display side panel using tamper resistant screws
 - [ ] Seal everything with silicone sealant
 - [ ] Silica packets everywhere
