@@ -1,39 +1,21 @@
-// Detection parameters derived from characterization test 2026-05-31
-// Noise floor: 34 ADC, std 3.68. Weakest real event: peak 68, duration 7ms.
-// Front/rear gap: 320-800ms observed. Third bounce pulse sometimes follows.
-
 #include <Adafruit_TinyUSB.h>
 #include <bluefruit.h>
 #include <SPI.h>
 #include <SD.h>
 #include <RTClib.h>
-
-const int THRESHOLD    = 65;
-const int MIN_PULSE_MS = 2;   // 5ms calibrated at slow speed; 2ms supports fast riders
-const int MIN_PAIR_GAP = 70;  // 70ms = 30mph ceiling with 95cm wheelbase; bounces top out at ~22ms so safe
-const int MAX_PAIR_GAP = 500;
+#include "detection.h"
 
 RTC_DS3231 rtc;
-
 File f;
-int bikeCount = 0;
-
-enum State { IDLE, IN_PULSE_1, BETWEEN, IN_PULSE_2 };
-State state = IDLE;
-
-unsigned long pulseStart  = 0;
-unsigned long pulse1End   = 0;
-unsigned long lastCount   = 0;
-const int COOLDOWN_MS     = 200;
-int pulsePeak = 0;
+Detection d;
 
 void advertise() {
-  uint8_t mfr[4] = {0xFF, 0xFF, (uint8_t)(bikeCount & 0xFF), (uint8_t)(bikeCount >> 8)};
+  uint8_t mfr[4] = {0xFF, 0xFF, (uint8_t)(d.bikeCount & 0xFF), (uint8_t)(d.bikeCount >> 8)};
   Bluefruit.Advertising.stop();
   Bluefruit.Advertising.clearData();
   Bluefruit.Advertising.addManufacturerData(mfr, sizeof(mfr));
   Bluefruit.Advertising.setType(BLE_GAP_ADV_TYPE_NONCONNECTABLE_NONSCANNABLE_UNDIRECTED);
-  Bluefruit.Advertising.setInterval(160, 160); // 100ms in 0.625ms units
+  Bluefruit.Advertising.setInterval(160, 160);
   Bluefruit.Advertising.start(0);
 }
 
@@ -43,7 +25,7 @@ void logEvent(const char* type, int peak) {
   snprintf(buf, sizeof(buf), "%04d-%02d-%02dT%02d:%02d:%02d,%s,%d,%d\n",
     now.year(), now.month(), now.day(),
     now.hour(), now.minute(), now.second(),
-    type, peak, bikeCount);
+    type, peak, d.bikeCount);
   f.print(buf);
   f.flush();
   Serial.print(buf);
@@ -82,7 +64,7 @@ void checkReset(unsigned long now) {
   DateTime t = rtc.now();
   if (t.hour() == 0 && t.minute() == 0 && lastResetMinute != 0) {
     lastResetMinute = 0;
-    bikeCount = 0;
+    d.bikeCount = 0;
     advertise();
     logEvent("reset", 0);
   }
@@ -91,61 +73,14 @@ void checkReset(unsigned long now) {
 void loop() {
   unsigned long now = millis();
   int val = analogRead(A0);
-  bool above = val > THRESHOLD;
   checkReset(now);
 
-  switch (state) {
-
-    case IDLE:
-      if (above && (now - lastCount >= COOLDOWN_MS)) {
-        state      = IN_PULSE_1;
-        pulseStart = now;
-        pulsePeak  = val;
-      }
-      break;
-
-    case IN_PULSE_1:
-      if (above) {
-        pulsePeak = max(pulsePeak, val);
-      } else {
-        if (now - pulseStart >= MIN_PULSE_MS) {
-          pulse1End = now;
-          state = BETWEEN;
-        } else {
-          state = IDLE;
-        }
-      }
-      break;
-
-    case BETWEEN:
-      if (now - pulse1End > MAX_PAIR_GAP) {
-        bikeCount++;
-        lastCount = now;
-        advertise();
-        logEvent("single", pulsePeak);
-        state = IDLE;
-      } else if (above && (now - pulse1End >= MIN_PAIR_GAP)) {
-        state      = IN_PULSE_2;
-        pulseStart = now;
-        pulsePeak  = val;
-      }
-      break;
-
-    case IN_PULSE_2:
-      if (above) {
-        pulsePeak = max(pulsePeak, val);
-      } else {
-        if (now - pulseStart >= MIN_PULSE_MS) {
-          bikeCount++;
-          lastCount = now;
-          advertise();
-          logEvent("bike", pulsePeak);
-          state = IDLE;
-        } else {
-          // brief dip at pulse edge — stay in pairing window if still within MAX_PAIR_GAP
-          state = (now - pulse1End <= MAX_PAIR_GAP) ? BETWEEN : IDLE;
-        }
-      }
-      break;
+  DetectionResult result = d.tick(now, val);
+  if (result.type == DE_PAIRED) {
+    advertise();
+    logEvent("bike", result.peak);
+  } else if (result.type == DE_UNPAIRED) {
+    advertise();
+    logEvent("single", result.peak);
   }
 }

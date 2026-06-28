@@ -1,3 +1,4 @@
 # vim!
 *.swp
 .DS_Store
+tests/test_detection
