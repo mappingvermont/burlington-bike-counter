@@ -30,8 +30,6 @@ Waterproof, tamper-resistant PVC enclosure for the 64×32 RGB LED panel (Matrix 
 
 ### Tamper Resistance
 - Hasp on rear panel, long shackle padlock through hasp staple and around fence rail — prevents removal
-- Pin-in-hex security screws on access side panel — prevents opening
-- Hasp and eyebolts must go through rear panel into a backing plate — 1/2" PVC alone won't hold pull force
 
 ## Assembly Notes
 
@@ -71,9 +69,3 @@ Waterproof, tamper-resistant PVC enclosure for the 64×32 RGB LED panel (Matrix 
 | Silica gel desiccant packets | 2–3 | [B0CGHY9VWC](https://www.amazon.com/gp/product/B0CGHY9VWC/) | Inside display enclosure |
 
 **Already have:** polycarbonate front panel
-
-## To Do
-
-- [ ] Source all BOM items
-- [ ] Cut and dry-fit before gluing
-- [ ] Silicone all seams after final assembly

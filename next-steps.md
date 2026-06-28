@@ -22,8 +22,7 @@
 
 ## Stage 3 — Enclosure Preparation
 
-- [ ] Build display enclosure (PVC, PVC cement)
-- [ ] Figure out ESP32 and battery mounts
+- [x] Build display enclosure (PVC, PVC cement)
 - [ ] Test display enclosure outside
 - [ ] Investigate options to hide sensor box and lock it
 - [ ] Order sensor box
@@ -33,7 +32,6 @@
 
 ## Stage 4 — Hardening
 
-- [ ] Add eye bolts and lock + hasp to display
 - [ ] Screw in display side panel using tamper resistant screws
 - [ ] Seal everything with silicone sealant
 - [ ] Silica packets everywhere
