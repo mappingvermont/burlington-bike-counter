@@ -23,7 +23,7 @@ matrix = rgbmatrix.RGBMatrix(
     addr_pins=[board.MTX_ADDRA, board.MTX_ADDRB, board.MTX_ADDRC, board.MTX_ADDRD],
     clock_pin=board.MTX_CLK, latch_pin=board.MTX_LAT, output_enable_pin=board.MTX_OE,
 )
-display = framebufferio.FramebufferDisplay(matrix, auto_refresh=True)
+display = framebufferio.FramebufferDisplay(matrix, auto_refresh=True, rotation=180)
 
 palette = displayio.Palette(2)
 palette[0] = 0x000000
