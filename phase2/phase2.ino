@@ -8,6 +8,7 @@
 RTC_DS3231 rtc;
 File f;
 Detection d;
+bool sdOk = false;
 
 void advertise() {
   uint8_t mfr[4] = {0xFF, 0xFF, (uint8_t)(d.bikeCount & 0xFF), (uint8_t)(d.bikeCount >> 8)};
@@ -26,8 +27,7 @@ void logEvent(const char* type, int peak) {
     now.year(), now.month(), now.day(),
     now.hour(), now.minute(), now.second(),
     type, peak, d.bikeCount);
-  f.print(buf);
-  f.flush();
+  if (sdOk) { f.print(buf); f.flush(); }
   Serial.print(buf);
 }
 
@@ -46,13 +46,15 @@ void setup() {
   }
   Serial.println("setup: RTC ok");
   if (!SD.begin(10)) {
-    Serial.println("setup: SD init failed — halting");
-    while (1) delay(10);
+    Serial.println("setup: SD not found — logging to serial only");
+  } else {
+    sdOk = true;
+    f = SD.open("counts.csv", FILE_WRITE);
+    f.println("datetime,event,peak,count");
+    f.flush();
+    Serial.println("setup: SD ok");
   }
-  f = SD.open("counts.csv", FILE_WRITE);
-  f.println("datetime,event,peak,count");
-  f.flush();
-  Serial.println("setup: SD ok — ready");
+  Serial.println("setup: ready");
 }
 
 int lastResetMinute = -1;
