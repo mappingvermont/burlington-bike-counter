@@ -18,7 +18,7 @@ A DIY pneumatic road tube bike counter. Built using a sealed silicone air tube l
 ## Build Phases
 
 - **[Phase 1](phase1/)** — Proof of concept. Sensor on a breadboard, laptop power, serial monitor. ~$85. Proves the MPX5010DP detects a tire before any deployment hardware is ordered.
-- **[Phase 2](phase2/)** — Full deployment. RTC, SD logging, LiPo battery, weatherproof enclosure. ~$83 incremental.
+- **[Phase 2](phase2/)** — Full deployment. RTC, SD logging, LiPo battery, weatherproof enclosure. ~$83.
 - **[Display](display/)** — Matrix Portal S3 + 64×32 RGB panel. Receives BLE from the sensor unit and renders the count as amber digits.
 
 ## Status
@@ -44,7 +44,7 @@ See [next-steps.md](next-steps.md) for current progress and remaining tasks.
 | Section | Total |
 |---|---|
 | [Phase 1](phase1/) | ~$85 |
-| [Phase 2](phase2/) (incremental) | ~$83 |
+| [Phase 2](phase2/) | ~$83 |
 | [Display electronics](display/electronics.md) | ~$135 |
 | [Display enclosure](display/enclosure.md) | ~$106* |
 | **Total** | **~$409** |

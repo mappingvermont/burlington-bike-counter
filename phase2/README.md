@@ -4,7 +4,7 @@ Order after Phase 1 confirms the sensor works. The Feather, sensor, and tubing c
 
 ---
 
-## BOM (~$83 incremental)
+## BOM (~$83)
 
 | Part | Source | Link | Price |
 |---|---|---|---|
