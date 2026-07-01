@@ -23,9 +23,10 @@
 ## Stage 3 — Enclosure Preparation
 
 - [x] Build display enclosure (PVC, PVC cement)
-- [ ] Test display enclosure outside
-- [ ] Investigate options to hide sensor box and lock it
-- [ ] Order sensor box
+- [x] Test display enclosure outside
+- [x] Investigate options to hide sensor box and lock it
+- [ ] Order sensor box, waterproof power connector, cable locks
+- [ ] Drill hole in enclosure to allow power connection
 - [ ] Drill hole in sensor box to allow tube through
 
 ---
@@ -33,7 +34,6 @@
 ## Stage 4 — Hardening
 
 - [ ] General refactor / simplification of code
-- [ ] Tests (??)
 - [ ] Improve energy management for both sensor and display
 - [ ] Update display to turn off between 10 PM and 6 AM
 - [ ] Screw in display side panel using tamper resistant screws
@@ -44,7 +44,6 @@
 
 ## Stage 5 — Deployment
 
-- [ ] Lay tube across bike lane, taut and flat
 - [ ] Mount and lock display enclosure on fence
 - [ ] Install sensor enclosure + lock
 - [ ] Power on — confirm display increments when bike rolls over tube

@@ -25,6 +25,20 @@ A DIY pneumatic road tube bike counter. Built using a sealed silicone air tube l
 
 See [next-steps.md](next-steps.md) for current progress and remaining tasks.
 
+## Photos
+
+**Bench testing**
+
+<img width="2016" height="1512" alt="Image" src="https://github.com/user-attachments/assets/afc454f4-54b0-4a09-8e8a-92fd8513c2af" />
+
+**Sensor board**
+
+<img width="2016" height="1512" alt="Image" src="https://github.com/user-attachments/assets/1ae3ad1a-bfe2-4e69-b90e-cf1811a93718" />
+
+**Display**
+
+<img width="1512" height="2016" alt="Image" src="https://github.com/user-attachments/assets/b8d8d387-3835-4abe-a23d-e579d8f8a5a6" />
+
 ---
 
 ## Prior Art
