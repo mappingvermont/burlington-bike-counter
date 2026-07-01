@@ -4,28 +4,18 @@ Order after Phase 1 confirms the sensor works. The Feather, sensor, and tubing c
 
 ---
 
-## BOM (~$175 incremental)
+## BOM (~$83 incremental)
 
-### Adafruit
-| # | Part | Product | Price |
+| Part | Source | Link | Price |
 |---|---|---|---|
-| 1 | LiPo battery 3.7V 6600mAh | [#353](https://www.adafruit.com/product/353) | $24.50 |
-| 2 | DS3231 Precision RTC FeatherWing | [#3028](https://www.adafruit.com/product/3028) | $13.95 |
-| 3 | Panel mount cable USB-C to Micro-B | [#4056](https://www.adafruit.com/product/4056) | $4.95 |
-| 4 | FeatherWing Proto | [#2884](https://www.adafruit.com/product/2884) | $4.95 |
-| 5 | MicroSD SPI breakout | [#4682](https://www.adafruit.com/product/4682) | $3.50 |
-| 6 | PG-9 cable gland (buy 2) | [#761](https://www.adafruit.com/product/761) | $1.95 ea |
-| 7 | 22 AWG solid core hookup wire (6 colors) | [#1311](https://www.adafruit.com/product/1311) | $15.95 |
-
-### DigiKey
-| # | Part | Link | Price |
-|---|---|---|---|
-| 10 | Stacking Headers | [DigiKey 1528-2830-ND](https://www.digikey.com/en/products/detail/adafruit-industries-llc/2830/5823439) | ~$1.25 |
-| 11 | CR1220 coin cell (Panasonic) | [DigiKey CR1220](https://www.digikey.com/en/products/detail/panasonic-energy/CR1220/269740) | $1.06 |
-
-### Hardware Store
-- M4 standoffs and screws (for mounting board stack in enclosure)
-- Silicone sealant (for sealing panel mount cable)
+| LiPo battery 3.7V 6600mAh | Adafruit | [#353](https://www.adafruit.com/product/353) | $24.50 |
+| DS3231 Precision RTC FeatherWing | Adafruit | [#3028](https://www.adafruit.com/product/3028) | $13.95 |
+| FeatherWing Proto | Adafruit | [#2884](https://www.adafruit.com/product/2884) | $4.95 |
+| MicroSD SPI breakout | Adafruit | [#4682](https://www.adafruit.com/product/4682) | $3.50 |
+| PG-9 cable gland (buy 2) | Adafruit | [#761](https://www.adafruit.com/product/761) | $1.95 ea |
+| Stacking Headers | DigiKey | [1528-2830-ND](https://www.digikey.com/en/products/detail/adafruit-industries-llc/2830/5823439) | ~$1.25 |
+| CR1220 coin cell (Panasonic) | DigiKey | [CR1220](https://www.digikey.com/en/products/detail/panasonic-energy/CR1220/269740) | $1.00 |
+| MicroSD card, 64GB | Amazon | — | $30.00 |
 
 **Power:** LiPo 6600mAh. Dominant draw is the sensor (~4mA) plus Feather sleep current. Expected life ~34 days. Battery voltage readable via VBAT.
 
@@ -213,13 +203,3 @@ arduino-cli upload --fqbn adafruit:nrf52:feather52840 --port /dev/cu.usbmodem101
 ```bash
 arduino-cli monitor --port /dev/cu.usbmodem101 --config baudrate=115200
 ```
-
----
-
-## Files
-
-- [`bike_counter.ino`](bike_counter.ino) — Arduino firmware for the nRF52840 sensor unit
-- [`analyze.py`](analyze.py) — analysis script for characterization data
-- [`simulate.py`](simulate.py) — simulate detection logic against logged data
-- [`log.csv`](log.csv) — raw ADC characterization log
-- [`analysis.png`](analysis.png) — plot from characterization test

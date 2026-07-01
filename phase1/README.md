@@ -14,36 +14,20 @@ The Feather won't sit in the breadboard (female headers don't go into a breadboa
 
 ---
 
-## BOM (~$101)
+## BOM (~$85)
 
-### Adafruit
-| # | Part | Product | Price |
+| Part | Source | Link | Price |
 |---|---|---|---|
-| 1 | Feather nRF52840 Express | [#4062](https://www.adafruit.com/product/4062) | $24.95 |
-| 2 | Short Headers Kit for Feather | [#2940](https://www.adafruit.com/product/2940) | $1.50 |
-| 3 | Half-size breadboard | [#64](https://www.adafruit.com/product/64) | $5.00 |
-| 4 | Jumper wires (male-to-male) | [#758](https://www.adafruit.com/product/758) | $3.95 |
-| 5 | Brass tip cleaner | [#1172](https://www.adafruit.com/product/1172) | $5.00 |
-| 6 | Helping hands | [#291](https://www.adafruit.com/product/291) | $6.95 |
-| 7 | Solder wick, 1.5mm wide | [#149](https://www.adafruit.com/product/149) | $3.50 |
-
-### Mouser
-| # | Part | Link | Price |
-|---|---|---|---|
-| 8 | MPX5010DP pressure sensor | [Mouser](https://www.mouser.com/ProductDetail/NXP-Semiconductors/MPX5010DP) | $21.48 |
+| Feather nRF52840 Express | Adafruit | [#4062](https://www.adafruit.com/product/4062) | $24.95 |
+| Short Headers Kit for Feather | Adafruit | [#2940](https://www.adafruit.com/product/2940) | $1.50 |
+| Half-size breadboard | Adafruit | [#64](https://www.adafruit.com/product/64) | $4.95 |
+| Jumper wires (male-to-male) | Adafruit | [#758](https://www.adafruit.com/product/758) | $3.95 |
+| MPX5010DP pressure sensor | Mouser | [Mouser](https://www.mouser.com/ProductDetail/NXP-Semiconductors/MPX5010DP) | $25.00 |
+| 4mm ID silicone tubing, black, 5m | Amazon | [uxcell 4mm ID × 6mm OD, black, 16.4ft](https://www.amazon.com/uxcell-Silicone-Irrigation-Brewing-Aquaponics/dp/B0FCFQWM82?th=1) | $8.00 |
+| Ceramic capacitor assortment (1µF, 0.01µF, 470pF needed) | Amazon | [Molence 1200pcs 24-value through-hole kit](https://www.amazon.com/Molence-Multilayer-Monolithic-Electronics-Audio-Video/dp/B09WRPHNK8) | $17.00 |
+| Hose end plug/cap (4mm) — push a #8 machine screw (4.2mm) into the tube end, secure with a zip tie or hose clamp | Hardware Store | — | Pennies |
 
 Datasheet: [MPX5010.pdf](MPX5010.pdf)
-
-### Amazon
-| # | Part | Link | Price |
-|---|---|---|---|
-| 9 | 4mm ID silicone tubing, black, 5m | [uxcell 4mm ID × 6mm OD, black, 16.4ft](https://www.amazon.com/uxcell-Silicone-Irrigation-Brewing-Aquaponics/dp/B0FCFQWM82?th=1) | ~$10 |
-| 10 | Ceramic capacitor assortment (1µF, 0.01µF, 470pF needed) | [Molence 1200pcs 24-value through-hole kit](https://www.amazon.com/Molence-Multilayer-Monolithic-Electronics-Audio-Video/dp/B09WRPHNK8) | ~$18 |
-
-### Hardware Store
-| # | Part | Notes | Price |
-|---|---|---|---|
-| 11 | Hose end plug/cap (4mm) | Push a #8 machine screw (4.2mm) into the tube end, secure with a zip tie or hose clamp | Pennies |
 
 ---
 
