@@ -3,3 +3,6 @@
 .DS_Store
 tests/test_detection
 memory/
+
+# device secrets — WiFi creds / web workflow password, never commit
+display/settings.toml

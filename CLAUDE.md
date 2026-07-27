@@ -33,3 +33,11 @@ Appends to `counts.csv` on each power cycle. `bikeCount` resets to 0 each sessio
 ## BLE Format
 
 Manufacturer data, company ID `0xFFFF`, count as uint16 little-endian. Display scans passively and re-renders on change.
+
+## Display Remote Access (Web Workflow)
+
+The Matrix Portal ESP32-S3 is sealed inside the fence enclosure with no USB access. `display/settings.toml` (gitignored, never committed — contains WiFi + web workflow credentials) enables CircuitPython's Web Workflow so `code.py` can be edited without opening the case:
+
+- **Station mode** (current setup): the ESP32-S3 joins an existing WiFi network via `CIRCUITPY_WIFI_SSID` / `CIRCUITPY_WIFI_PASSWORD`. Reach the device at `http://circuitpython.local/` (password is `CIRCUITPY_WEB_API_PASSWORD`) from any device on the same network. Used at home during maintenance, joining `TheHousehold-2.4` — the ESP32-S3 radio is **2.4GHz only**, so it must join the 2.4GHz band specifically, not a 5GHz-only SSID.
+
+Since `settings.toml` is gitignored, it must be copied onto the `CIRCUITPY` drive by hand (there's no way to add it later without physical USB access — do this before sealing the enclosure). The actual credential values live only in the local `display/settings.toml` file, not in git.
