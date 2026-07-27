@@ -2,6 +2,12 @@
 
 A DIY pneumatic road tube bike counter. Built using a sealed silicone air tube laid across a bike lane to detect pressure spikes from passing tires. An electronic sensor counts them, timestamps each event, and broadcasts the running total over BLE to a nearby LED display.
 
+
+
+https://github.com/user-attachments/assets/3bd4c51c-f754-4680-b4d7-a3a6d64bfadf
+
+
+
 ## System Architecture
 
 ```
