@@ -18,7 +18,7 @@ Waterproof, tamper-resistant PVC enclosure for the 64×32 RGB LED panel (Matrix 
 
 ### Joints
 - PVC cement — top, bottom, and permanent side to rear panel
-- Pin-in-hex security screws + brass inserts — access side panel only, resealed with silicone each time
+- Screws in side panel only, resealed with silicone each time
 
 ### Mounting
 - Eyebolts through rear panel + zip ties around fence rails (stabilization)
@@ -36,7 +36,7 @@ Waterproof, tamper-resistant PVC enclosure for the 64×32 RGB LED panel (Matrix 
 - Pre-drill all holes before screwing
 - Use stainless or coated screws for anything exposed
 - Leave ~1cm airspace between LED panel and box walls (heat)
-- Countersink security screw holes so heads sit flush
+- Countersink screw holes so heads sit flush
 
 ## Bill of Materials
 
@@ -49,9 +49,6 @@ Waterproof, tamper-resistant PVC enclosure for the 64×32 RGB LED panel (Matrix 
 | Eyebolts (stainless) | 2 | Lowe's | — | | Rear panel, stabilize against fence |
 | Hasp + staple (stainless) | 1 | Lowe's | — | $11.00 | Rear panel |
 | Long shackle padlock | 1 | Lowe's | — | | Through hasp staple, around fence rail |
-| Tamper-Resistant Hex-Drive 18-8 Stainless Steel Flat Head Screws | 8 | McMaster-Carr | [90517A212](https://www.mcmaster.com/90517A212/) | $10.00 | Access side panel |
-| Tamper-Resistant Hex Bit | 1 | McMaster-Carr | [7240A33](https://www.mcmaster.com/7240A33/) | $4.00 | Keep with tools |
-| Barbed Inserts for Plastic Brass, 8-32, 0.312", standard | 8 | McMaster-Carr | [93738A180](https://www.mcmaster.com/93738A180/) | $9.00 | Box edges for access panel |
 | Waterproof USB-C panel mount, IP67 | 1 | Amazon | [B09QLR3ZG6](https://www.amazon.com/ANMBEST-Mounting-Waterproof-Connector-PA6BG33/dp/B09QLR3ZG6) | | Bottom of enclosure, charging port |
 | Silica gel desiccant packets | 2–3 | Amazon | [B0CGHY9VWC](https://www.amazon.com/gp/product/B0CGHY9VWC/) | | Inside display enclosure |
 | Polycarbonate sheet | 1 | Lowe's | — | | Front window |

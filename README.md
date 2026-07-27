@@ -52,8 +52,8 @@ See [next-steps.md](next-steps.md) for current progress and remaining tasks.
 | [Phase 1](phase1/) | ~$85 |
 | [Phase 2](phase2/) | ~$83 |
 | [Display electronics](display/electronics.md) | ~$135 |
-| [Display enclosure](display/enclosure.md) | ~$106* |
-| **Total** | **~$409** |
+| [Display enclosure](display/enclosure.md) | ~$83* |
+| **Total** | **~$386** |
 
 \* Enclosure total excludes a handful of unpriced hardware-store/Amazon items (caulk, eyebolts, padlock, waterproof USB-C mount, desiccant) — see [enclosure.md](display/enclosure.md) for the full BOM.
 

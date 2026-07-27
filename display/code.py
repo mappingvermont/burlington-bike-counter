@@ -18,7 +18,7 @@ import _bleio
 
 displayio.release_displays()
 matrix = rgbmatrix.RGBMatrix(
-    width=64, height=32, bit_depth=2,
+    width=64, height=32, bit_depth=1,  # only ever render flat on/off amber — no grayscale needed
     rgb_pins=[board.MTX_R1, board.MTX_G1, board.MTX_B1, board.MTX_R2, board.MTX_G2, board.MTX_B2],
     addr_pins=[board.MTX_ADDRA, board.MTX_ADDRB, board.MTX_ADDRC, board.MTX_ADDRD],
     clock_pin=board.MTX_CLK, latch_pin=board.MTX_LAT, output_enable_pin=board.MTX_OE,
@@ -99,19 +99,27 @@ def _read_count(raw):
 
 # ── Main ───────────────────────────────────────────────────────────────────────
 
+LOW_POWER = False  # set True + save over web workflow to blank display & stop BLE scan (bring-home / storage mode)
+
 render(0)
 current = 0
 
-while True:
-    try:
-        for entry in _bleio.adapter.start_scan(
-            minimum_rssi=-90,
-            active=False,
-            timeout=2.0,
-        ):
-            count = _read_count(bytes(entry.advertisement_bytes))
-            if count is not None and count != current:
-                current = count
-                render(current)
-    except _bleio.BluetoothError:
-        _bleio.adapter.stop_scan()
+if LOW_POWER:
+    bitmap.fill(0)
+    import time
+    while True:
+        time.sleep(60)
+else:
+    while True:
+        try:
+            for entry in _bleio.adapter.start_scan(
+                minimum_rssi=-90,
+                active=False,
+                timeout=2.0,
+            ):
+                count = _read_count(bytes(entry.advertisement_bytes))
+                if count is not None and count != current:
+                    current = count
+                    render(current)
+        except _bleio.BluetoothError:
+            _bleio.adapter.stop_scan()

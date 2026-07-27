@@ -25,20 +25,17 @@
 - [x] Build display enclosure (PVC, PVC cement)
 - [x] Test display enclosure outside
 - [x] Investigate options to hide sensor box and lock it
-- [ ] Order sensor box, waterproof power connector, cable locks
-- [ ] Drill hole in enclosure to allow power connection
+- [x] Order sensor box, waterproof power connector, cable locks
+- [x] Drill hole in enclosure to allow power connection
 - [ ] Drill hole in sensor box to allow tube through
 
 ---
 
 ## Stage 4 — Hardening
 
-- [ ] General refactor / simplification of code
-- [ ] Improve energy management for both sensor and display
-- [ ] Update display to turn off between 10 PM and 6 AM
-- [ ] Screw in display side panel using tamper resistant screws
-- [ ] Seal everything with silicone sealant
 - [ ] Silica packets everywhere
+- [ ] Screw in display side panel
+- [ ] Seal everything with silicone sealant
 
 ---
 
