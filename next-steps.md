@@ -27,14 +27,14 @@
 - [x] Investigate options to hide sensor box and lock it
 - [x] Order sensor box, waterproof power connector, cable locks
 - [x] Drill hole in enclosure to allow power connection
-- [ ] Drill hole in sensor box to allow tube through
+- [x] Drill hole in sensor box to allow tube through
 
 ---
 
 ## Stage 4 — Hardening
 
-- [ ] Silica packets everywhere
-- [ ] Screw in display side panel
+- [x] Silica packets everywhere
+- [x] Screw in display side panel
 - [ ] Seal everything with silicone sealant
 
 ---
