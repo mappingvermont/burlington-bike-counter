@@ -77,9 +77,10 @@ matrix = rgbmatrix.RGBMatrix(
 
 ## Color
 
-Highway orange-amber: `0xFF3800` (R=255, G=56, B=0)
+Amber: `0xFFAA00` — brighter than orange for outdoor visibility. Current as of
+`code.py`; tuned twice from an initial `0xFF4400` orange.
 
-The panel's green LEDs are 3-4× more luminous than red (per datasheet), so achieving orange requires much less green than you'd expect from RGB color pickers.
+The panel's green LEDs are 3-4× more luminous than red (per datasheet), so achieving orange/amber requires much less green than you'd expect from RGB color pickers.
 
 ---
 

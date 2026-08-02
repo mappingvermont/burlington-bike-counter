@@ -18,7 +18,7 @@ import _bleio
 
 displayio.release_displays()
 matrix = rgbmatrix.RGBMatrix(
-    width=64, height=32, bit_depth=4,  # >1 enables PWM dimming — bit_depth=1 was always full current
+    width=64, height=32, bit_depth=1,
     rgb_pins=[board.MTX_R1, board.MTX_G1, board.MTX_B1, board.MTX_R2, board.MTX_G2, board.MTX_B2],
     addr_pins=[board.MTX_ADDRA, board.MTX_ADDRB, board.MTX_ADDRC, board.MTX_ADDRD],
     clock_pin=board.MTX_CLK, latch_pin=board.MTX_LAT, output_enable_pin=board.MTX_OE,
@@ -27,7 +27,7 @@ display = framebufferio.FramebufferDisplay(matrix, auto_refresh=True)
 
 palette = displayio.Palette(2)
 palette[0] = 0x000000
-palette[1] = 0x001e00  # pure green, ~half prior intensity — green LEDs are 3-4x more luminous/mA than red per datasheet
+palette[1] = 0xFFAA00  # amber — brighter than orange for outdoor visibility
 
 bitmap = displayio.Bitmap(64, 32, 2)
 group  = displayio.Group()
