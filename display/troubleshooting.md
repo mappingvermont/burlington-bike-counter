@@ -99,3 +99,44 @@ still goes dark:
 If it doesn't, that points at WiFi/Web Workflow (now disabled) as the cause. If it
 still goes dark, BLE scanning or something else is implicated instead, and the
 `time.sleep()`-between-scans mitigation is the next thing to try.
+
+## Battery test results (2026-08-02)
+
+Ran at home (amber color, WiFi/Web Workflow off per above). BLE scanning was
+still active in `code.py` but had nothing to receive — the sensor is
+currently deployed in the field, out of range, so no advertisements came in
+during this test.
+
+Battery level over the run:
+
+| Time | Battery |
+|------|---------|
+| 12:17 PM | 90% |
+| 1:13 PM  | 85% |
+| 2:24 PM  | 78% |
+| 3:30 PM  | 73% |
+| 7:11 PM  | 53% |
+| 10:33 PM | 35% |
+
+**Panel stayed lit the entire ~10.25 hours**, well past the ~2 hour mark
+where it previously went dark with WiFi/Web Workflow enabled. This points
+at WiFi/Web Workflow as the likely cause of the handshake fault, not BLE.
+
+**Caveat:** this test doesn't fully rule out BLE as a contributor — the
+radio was scanning the whole time, but never actually received/parsed a
+packet (no sensor in range). If the contention bug specifically requires
+handling an incoming advertisement rather than just idle scanning, this
+run wouldn't have exercised that path. A field test (sensor in range,
+WiFi still off) would close that gap.
+
+**Power draw:** roughly 55 percentage points over ~10.25 hours (~5.4
+pts/hr), fairly steady — no obvious cliff or acceleration. Relevant to the
+separate dimmed-runtime drain question raised earlier; this run was at
+full brightness (`bit_depth=1`, undimmed amber), so it's a baseline, not a
+comparison point for the dimmed variant.
+
+**Next action:** since disabling WiFi alone kept the panel lit far longer
+than any prior failure, it's reasonable to deploy with Web Workflow off in
+the field and monitor. If the panel still goes dark out there (with BLE
+now actually receiving real advertisements from the sensor), that would
+implicate BLE specifically and point back at the `time.sleep()` mitigation.
