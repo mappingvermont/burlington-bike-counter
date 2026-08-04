@@ -20,13 +20,14 @@ void advertise() {
   Bluefruit.Advertising.start(0);
 }
 
-void logEvent(const char* type, int peak) {
+void logEvent(const char* type, int peak, int trough) {
   DateTime now = rtc.now();
-  char buf[64];
-  snprintf(buf, sizeof(buf), "%04d-%02d-%02dT%02d:%02d:%02d,%s,%d,%d\n",
+  float tempC = rtc.getTemperature();
+  char buf[96];
+  snprintf(buf, sizeof(buf), "%04d-%02d-%02dT%02d:%02d:%02d,%s,%d,%d,%.2f,%d\n",
     now.year(), now.month(), now.day(),
     now.hour(), now.minute(), now.second(),
-    type, peak, d.bikeCount);
+    type, peak, trough, tempC, d.bikeCount);
   if (sdOk) { f.print(buf); f.flush(); }
   Serial.print(buf);
 }
@@ -50,7 +51,7 @@ void setup() {
   } else {
     sdOk = true;
     f = SD.open("counts.csv", FILE_WRITE);
-    f.println("datetime,event,peak,count");
+    f.println("datetime,event,peak,trough,tempC,count");
     f.flush();
     Serial.println("setup: SD ok");
   }
@@ -68,9 +69,12 @@ void checkReset(unsigned long now) {
     lastResetMinute = 0;
     d.bikeCount = 0;
     advertise();
-    logEvent("reset", 0);
+    logEvent("reset", 0, -1);
   }
 }
+
+const unsigned long SAMPLE_INTERVAL_MS = 5000;
+unsigned long lastSample = 0;
 
 void loop() {
   unsigned long now = millis();
@@ -80,9 +84,14 @@ void loop() {
   DetectionResult result = d.tick(now, val);
   if (result.type == DE_PAIRED) {
     advertise();
-    logEvent("bike", result.peak);
+    logEvent("bike", result.peak, result.trough);
   } else if (result.type == DE_UNPAIRED) {
     advertise();
-    logEvent("single", result.peak);
+    logEvent("single", result.peak, result.trough);
+  }
+
+  if (now - lastSample >= SAMPLE_INTERVAL_MS) {
+    lastSample = now;
+    logEvent("sample", val, -1);
   }
 }

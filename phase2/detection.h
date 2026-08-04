@@ -8,7 +8,7 @@ const int MAX_PAIR_GAP = 500;
 const int COOLDOWN_MS  = 200;
 
 enum DetectionEvent { DE_NONE, DE_UNPAIRED, DE_PAIRED };
-struct DetectionResult { DetectionEvent type; int peak; };
+struct DetectionResult { DetectionEvent type; int peak; int trough; };
 enum State { IDLE, IN_PULSE_1, BETWEEN, IN_PULSE_2 };
 
 struct Detection {
@@ -17,11 +17,14 @@ struct Detection {
     unsigned long pulse1End  = 0;
     unsigned long lastCount  = 0;
     int pulsePeak            = 0;
+    int trough               = 4095;
     int bikeCount            = 0;
 
     DetectionResult tick(unsigned long now, int val) {
         bool above = val > THRESHOLD;
-        DetectionResult result = {DE_NONE, 0};
+        DetectionResult result = {DE_NONE, 0, 0};
+
+        if (val < trough) trough = val;
 
         switch (state) {
             case IDLE:
@@ -49,7 +52,8 @@ struct Detection {
                 if (now - pulse1End > (unsigned long)MAX_PAIR_GAP) {
                     bikeCount++;
                     lastCount = now;
-                    result = {DE_UNPAIRED, pulsePeak};
+                    result = {DE_UNPAIRED, pulsePeak, trough};
+                    trough = val;
                     state = IDLE;
                 } else if (above && (now - pulse1End >= (unsigned long)MIN_PAIR_GAP)) {
                     state      = IN_PULSE_2;
@@ -65,7 +69,8 @@ struct Detection {
                     if (now - pulseStart >= (unsigned long)MIN_PULSE_MS) {
                         bikeCount++;
                         lastCount = now;
-                        result = {DE_PAIRED, pulsePeak};
+                        result = {DE_PAIRED, pulsePeak, trough};
+                        trough = val;
                         state = IDLE;
                     } else {
                         state = (now - pulse1End <= (unsigned long)MAX_PAIR_GAP) ? BETWEEN : IDLE;

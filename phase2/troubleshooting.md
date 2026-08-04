@@ -121,6 +121,91 @@ future storm. Once we have that:
 - After deploying, watch the next storm-prone window to confirm bike/single
   counts stay flat through it.
 
-This firmware change (`troughSinceLast` field + CSV column) has been
-scoped but **not yet implemented** — next session, do this before
-attempting the hysteresis fix itself.
+## Implemented (2026-08-04): trough, temperature, and periodic sampling
+
+Ahead of a home data-collection test, three logging additions landed in
+`phase2.ino`/`detection.h`, all designed to make raw SD volume actually
+answer the drift question instead of just accumulating more
+threshold-crossing events:
+
+- **`trough`**: `Detection` now tracks the minimum ADC value seen since the
+  previous logged event (updated every `tick()`, not just while a pulse is
+  active) and includes it in `DetectionResult`. Reset to the current
+  reading immediately after each `bike`/`single` emission.
+- **`tempC`**: `RTC_DS3231::getTemperature()` (confirmed present in the
+  installed RTClib, `RTClib.h:390`) is read on every logged row — directly
+  tests the thermal-drift hypothesis that was previously unconfirmed for
+  lack of any temperature data.
+- **`sample` event type**: `loop()` now logs a `sample` row every
+  `SAMPLE_INTERVAL_MS` (5000ms) regardless of whether the signal ever
+  crosses `THRESHOLD` — `peak` holds the raw instantaneous ADC reading,
+  `trough` is `-1` (not applicable to a point sample). This is the piece
+  that actually lets baseline drift be observed even when nothing is being
+  counted at all, which `bike`/`single`/`reset` rows alone can never show.
+
+`counts.csv` header is now `datetime,event,peak,trough,tempC,count`
+(previously `datetime,event,peak,count`) — old CSVs in `data/` are not
+compatible with this schema and should not be concatenated with new ones
+without re-tagging.
+
+Compiled clean against `adafruit:nrf52:feather52840` (isolated build,
+`sensor_debug.ino` excluded — see note below). Not yet flashed/uploaded.
+
+**Next action:** flash and run the home test. Once storms are captured
+with this schema, compare `trough` during storms vs. real bike
+between-wheel gaps (per the analysis plan above), and check whether
+`tempC` actually tracks the time-of-day clustering before treating thermal
+drift as anything more than a hypothesis.
+
+## Home test, session 1 (2026-08-04): storm confirmed as decay-tail of a
+## mechanical disturbance, not an independent thermal/vibration event
+
+**Sequence:** stomped/squeezed the tube hard (bike detections #1-5 in
+`~/Desktop/COUNTS.CSV`). Baseline immediately spiked to ~900-926 (near
+ADC max) and stayed pinned there for minutes — the detector logic just
+sits parked in `IN_PULSE_1` while `val` never drops back under
+`THRESHOLD`, which is why further stomping/squeezing produced zero
+further counts; this wasn't a code bug, the sensor was saturated. Baseline
+then declined slowly: 925 → 677 over the rest of that file (~15 min), the
+board was power-cycled (to pull the SD card — `bikeCount` reset to 0
+confirms this, but the tube itself was not touched during that cycle), and
+in the next file (`~/Desktop/COUNTS_20260804_2.csv`) the same decline
+continued: 677 → 390 at restart, continuing down through the 300s/200s/100s
+over the next ~30 min, finally crossing the 65-90 storm band at 14:45:55
+and firing a 65-event, 20-second storm (peaks 68-74, troughs 62-65) before
+settling to a genuine quiet baseline of ~27-30 by ~14:50.
+
+**Read on the storm-troughs-vs-real-gap question:** this storm's troughs
+(62-65) sit clearly above the settled quiet baseline (~27-30), which is
+also roughly where a real bike's between-wheel gap should land. That's a
+real, usable gap for sizing hysteresis's `REARM_THRESHOLD` — e.g. ~45-50 —
+though it's one data point, not a confirmed general separation.
+
+**Reframing the "storm" investigation:** the original day-of-data
+(2026-08-02, documented above) found storms clustering by hour with
+"thermal" as one unconfirmed hypothesis among several. This session
+suggests at least one class of storm is actually the *tail of a large,
+slow-decaying mechanical disturbance* (something physically pressing on
+or deforming the tube) passing back down through the threshold band on
+its way to baseline — not necessarily a repeating daily
+thermal/vibration pattern. Both mechanisms could coexist (a slow
+disturbance-decay explains this session's storm; the original
+time-of-day clustering across a full day without any known stomping event
+is still unexplained by this). Don't conflate the two without more data —
+but this is now positive evidence that at least one storm-producing
+mechanism is a *decaying pressure excursion*, which argues for the
+rate/trough-based mitigations already proposed (hysteresis, rate limiter)
+regardless of the excursion's ultimate cause.
+
+**Separate, more urgent finding — no signal at all from riding over
+the tube:** in the last few minutes of `COUNTS_20260804_2.csv`
+(15:04-15:08), multiple bike ride-overs were reported but the log shows
+*zero* variation beyond normal ~2-4 ADC ripple around the settled 27-30
+baseline — not even a sub-threshold blip. A working tube under a rolling
+tire should produce some pressure signature even below `THRESHOLD`. This
+points at a possible mechanical fault in the tube itself (kink, crimp, or
+disconnection, plausibly from the earlier stomping) rather than anything
+firmware-related, and needs a physical inspection of the tube before
+further firmware tuning — no threshold/hysteresis change fixes a tube
+that isn't transmitting pressure at all. Not yet inspected as of this
+writing.
