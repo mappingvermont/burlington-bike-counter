@@ -197,6 +197,29 @@ mechanism is a *decaying pressure excursion*, which argues for the
 rate/trough-based mitigations already proposed (hysteresis, rate limiter)
 regardless of the excursion's ultimate cause.
 
+## Bench test with case closed (2026-08-04)
+
+Closed the case (tube routed through the actual case gland) and squeezed
+the tube by hand repeatedly while it logged to SD independent of USB
+(`/Volumes/BIKECOUNTER/COUNTS.CSV`). Result: we were able to detect bikes
+as expected, with the case closed — real, well-separated detections
+(peaks 69-315) for the first ~35s. That rules out "tube/sensor/gland
+broken" as the explanation for the earlier outdoor silence, and also
+rules out closing the case by itself as the cause of that silence, since
+detection worked fine with it closed. The pavement mounting/clamp point
+remains the most likely untested variable for the outdoor silence.
+
+After that initial ~35s, continued rapid hand-squeezing produced a run of
+closely-spaced detections with peaks around 69-73 and troughs around
+61-65 — numerically similar to the storm data logged earlier this session
+(peaks 68-74, troughs 62-65, from the unrelated mechanical-decay episode).
+Whether that similarity means anything about the trough/hysteresis
+mitigation is genuinely unclear from this one session: it was uncontrolled
+hand-squeezing, not real bike wheel-pairs, so it's not a reliable stand-in
+for real traffic either way. Not drawing a conclusion from it — flagging
+the numeric overlap as something to keep in mind, and leaving the
+trough/hysteresis question open pending real outdoor multi-bike data.
+
 **Separate, more urgent finding — no signal at all from riding over
 the tube:** in the last few minutes of `COUNTS_20260804_2.csv`
 (15:04-15:08), multiple bike ride-overs were reported but the log shows
