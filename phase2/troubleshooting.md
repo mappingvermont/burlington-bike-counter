@@ -220,6 +220,19 @@ for real traffic either way. Not drawing a conclusion from it — flagging
 the numeric overlap as something to keep in mind, and leaving the
 trough/hysteresis question open pending real outdoor multi-bike data.
 
+## Push-down test, indoors, untaped (2026-08-04)
+
+To separate "force/technique" from "taping" as candidates for the outdoor
+silence, tried a gentler push-down (not a squeeze) on the untaped tube
+indoors, watched live over serial. 6/6 pushes registered cleanly — peaks
+96-118 (weaker than squeeze peaks, as expected for a lighter push),
+troughs returning to baseline ~41-48 each time. So a gentler push, by
+itself, still works fine when the tube is loose. That rules out
+force/technique as the differentiator and leaves taping as the main
+untested variable — next step is repeating this same push-down test with
+the tube actually taped down, to see if the tape itself is what's
+blocking the signal outdoors.
+
 **Separate, more urgent finding — no signal at all from riding over
 the tube:** in the last few minutes of `COUNTS_20260804_2.csv`
 (15:04-15:08), multiple bike ride-overs were reported but the log shows
@@ -232,3 +245,94 @@ firmware-related, and needs a physical inspection of the tube before
 further firmware tuning — no threshold/hysteresis change fixes a tube
 that isn't transmitting pressure at all. Not yet inspected as of this
 writing.
+
+## Follow-up finding: unprompted oscillating decay, no contact (2026-08-04)
+
+Re-examined the full `sample` trace in `COUNTS_20260804_2.csv` from
+14:13-14:45 (leading up to the storm documented above). The user confirmed
+nothing touched the tube/case during this window — it sat outside on the
+driveway, observed but not approached. Despite that, the reading doesn't
+decay smoothly: it oscillates up and down by tens of ADC counts (e.g.
+380→434→381→300→361→254→336...) on top of the overall downward trend,
+before finally crossing the storm band around 14:45. A passive process
+(air leaking past a crimp, or silicone creeping back to shape) should look
+like a smooth monotonic decay, not this repeated rise-and-fall — so
+"decay tail" undersells what's happening; something was still actively
+disturbing the signal throughout, not just settling.
+
+Also notable: `tempC` (from the DS3231, physically adjacent to the
+pressure sensor) rose smoothly and monotonically the entire time
+(39.0°C → 44.5°C) while the ADC reading fell — the two are moving in
+opposite directions, which argues against ambient thermal drift as the
+driver of this particular event.
+
+Candidate causes for the oscillation, unconfirmed, roughly ranked:
+
+1. **Wind on the exposed reference port.** The sensor's reference port
+   currently vents through an ~8" tube that exits the case via its own
+   gland and is completely exposed/unshielded outdoors. A gust hitting
+   that open tube end directly could produce exactly this kind of noisy,
+   non-monotonic pressure signal, independent of anything happening in the
+   main 15ft sensing tube.
+2. **Stick-slip release of the stomped tube.** Silicone under a hard
+   crimp doesn't necessarily relax smoothly — it can un-stick internally
+   in discrete jumps, producing brief rises before resuming decay.
+3. **Electronics warm-up drift.** This session started shortly after a
+   board power cycle; ADC/voltage references can drift for the first
+   ~10-30 min after power-on. Doesn't obviously explain oscillation lasting
+   30+ min, but not ruled out.
+4. **Ground/pavement vibration from nearby traffic**, or **hot asphalt
+   subtly shifting how the tube is supported** — both possible without any
+   direct contact, both hard to control for.
+
+Long-term fix under consideration for (1): replace the reference tube's
+cable gland with a PG-9 threaded submersible breather vent (membrane
+lets air through slowly for pressure equalization, blocks fast gusts and
+water) — confirmed the existing gland (Adafruit #761) is PG-9 thread, and
+McMaster sells a PG-9 submersible threaded breather vent that should
+thread into the same hole. Not yet purchased — the plan is to validate
+the wind hypothesis for free first (see plan below) before spending on it.
+
+## Testing plan for 2026-08-05
+
+Goal: keep isolating the storm/oscillation cause without buying anything
+yet. Also close out the taping question from the 08-04 push-down test.
+
+1. **Set up outside** on the driveway as before, case closed, reference
+   tube in its current (unshielded) configuration.
+2. **Let it sit powered-on and untouched for ~45-60 min** before treating
+   any of the following as a real observation window — this burns through
+   any electronics warm-up drift so it doesn't confound the rest of the
+   test.
+3. **No-contact baseline window, unshielded** (~1 hour): reference tube
+   exposed as-is, nobody near it, log samples only. Note wind/weather
+   qualitatively a few times during the hour (not just once at the start),
+   since conditions can drift within the window itself.
+4. **No-contact baseline window, shielded** (~1 hour), run right after (3):
+   loosely pack a wad of cotton/foam a short way into the reference tube
+   opening (breathable, reversible, free) to break up direct gusts without
+   sealing the tube. Compare the `sample` trace against (3) — persistent
+   oscillation unshielded but flat shielded implicates wind; no difference
+   points back to warm-up drift or stick-slip release instead. Caveat:
+   stacking two 1-hour windows means ~2 hours elapse between the start of
+   (3) and the end of (4), long enough for real weather to drift on its
+   own — treat a difference between windows as suggestive, not conclusive,
+   unless the noted wind/weather conditions actually line up with it.
+5. **Tape the main sensing tube down** as it would be for a real
+   deployment.
+6. **Manually push down on the taped tube** (same gentle push, not squeeze,
+   as the 08-04 indoor test) and confirm on live serial whether it still
+   registers cleanly. This is the direct test of whether taping itself is
+   what killed detection outdoors on 08-04.
+
+Deferred until steps above give a clear signal: buying the PG-9 submersible
+vent (only if step 4 shows shielding clearly helps — no point spending $20
+validating a mechanism that free cotton either already confirmed or ruled
+out).
+
+Still open, not addressed by tomorrow's plan: whether the trough/hysteresis
+mitigation actually separates storms from real bike gaps (needs real
+outdoor multi-bike data, not bench/hand tests); the original
+2026-08-02 time-of-day-clustered storms (no known stomping event, separate
+from this session's mechanical-decay storm); the BLE-receiving-packets gap
+for the display-power investigation.
