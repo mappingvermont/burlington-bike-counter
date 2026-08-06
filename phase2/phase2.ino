@@ -10,8 +10,18 @@ File f;
 Detection d;
 bool sdOk = false;
 
-void advertise() {
-  uint8_t mfr[4] = {0xFF, 0xFF, (uint8_t)(d.bikeCount & 0xFF), (uint8_t)(d.bikeCount >> 8)};
+// Boot into raw-pressure debug mode (broadcasts live A0 reading, like
+// pressure_debug.ino) for DEBUG_DURATION_MS, so the tube/sensor can be
+// checked on the display after a power cycle with no computer on site.
+// Then falls through into normal bike-counting mode for the rest of the
+// session.
+const unsigned long DEBUG_DURATION_MS = 5UL * 60 * 1000;
+const unsigned long DEBUG_ADVERTISE_INTERVAL_MS = 200;
+bool debugMode = true;
+unsigned long lastDebugAdvertise = 0;
+
+void advertise(uint16_t val) {
+  uint8_t mfr[4] = {0xFF, 0xFF, (uint8_t)(val & 0xFF), (uint8_t)(val >> 8)};
   Bluefruit.Advertising.stop();
   Bluefruit.Advertising.clearData();
   Bluefruit.Advertising.addManufacturerData(mfr, sizeof(mfr));
@@ -39,7 +49,7 @@ void setup() {
   Serial.println("setup: start");
   Bluefruit.begin();
   Bluefruit.setTxPower(4);
-  advertise();
+  advertise(0);
   Serial.println("setup: BLE ok");
   if (!rtc.begin()) {
     Serial.println("setup: RTC not found — halting");
@@ -55,7 +65,7 @@ void setup() {
     f.flush();
     Serial.println("setup: SD ok");
   }
-  Serial.println("setup: ready");
+  Serial.println("setup: ready, entering raw-pressure debug mode for 5 min");
 }
 
 int lastResetMinute = -1;
@@ -68,7 +78,7 @@ void checkReset(unsigned long now) {
   if (t.hour() == 0 && t.minute() == 0 && lastResetMinute != 0) {
     lastResetMinute = 0;
     d.bikeCount = 0;
-    advertise();
+    advertise(d.bikeCount);
     logEvent("reset", 0, -1);
   }
 }
@@ -78,15 +88,34 @@ unsigned long lastSample = 0;
 
 void loop() {
   unsigned long now = millis();
+
+  if (debugMode) {
+    if (now >= DEBUG_DURATION_MS) {
+      debugMode = false;
+      Serial.println("debug window elapsed: switching to bike counting mode");
+      advertise(d.bikeCount);
+      lastSample = now;
+      lastResetCheck = now;
+      return;
+    }
+    if (now - lastDebugAdvertise >= DEBUG_ADVERTISE_INTERVAL_MS) {
+      lastDebugAdvertise = now;
+      int val = analogRead(A0);
+      advertise((uint16_t)val);
+      Serial.println(val);
+    }
+    return;
+  }
+
   int val = analogRead(A0);
   checkReset(now);
 
   DetectionResult result = d.tick(now, val);
   if (result.type == DE_PAIRED) {
-    advertise();
+    advertise(d.bikeCount);
     logEvent("bike", result.peak, result.trough);
   } else if (result.type == DE_UNPAIRED) {
-    advertise();
+    advertise(d.bikeCount);
     logEvent("single", result.peak, result.trough);
   }
 
