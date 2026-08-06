@@ -336,3 +336,35 @@ outdoor multi-bike data, not bench/hand tests); the original
 2026-08-02 time-of-day-clustered storms (no known stomping event, separate
 from this session's mechanical-decay storm); the BLE-receiving-packets gap
 for the display-power investigation.
+
+## Field session notes (2026-08-05): live pressure-on-display debugging
+
+Watching the raw A0 reading on the display in real time (rather than only
+reviewing logged CSVs after the fact) turned out to be the single most
+effective debugging method used so far — problems that are invisible in
+a post-hoc peak/trough log show up immediately as a live number.
+
+- **Tube configuration finding:** a short, uncapped tube on the reference
+  port is the best configuration seen so far. A capped tube on the
+  reference port had previously given systematically low, unresponsive
+  readings. Bikes should still ride over a long capped tube on the
+  *sensing* port, as before — only the reference-port tube changed.
+- **Baseline pressure fluctuates on its own** — slow rises and falls with
+  no contact, consistent with the wind/thermal/warm-up drift already
+  suspected in the sections above, now directly *seen* happening live
+  rather than inferred after the fact from logged storms.
+- **Reseating the hose on the sensor barb changed the reading** at one
+  point during this session — disconnecting and reattaching the tube-to
+  sensor connection visibly shifted the baseline. This is a new candidate
+  noise source (a loose/marginal barb connection) that hasn't been
+  isolated from the other drift causes yet — worth deliberately wiggling/
+  reseating the barb connection in a controlled way in a future session to
+  see if it's reproducible.
+- **Working hypothesis going forward:** given that baseline drifts on the
+  order of a minute or so, a fixed `THRESHOLD` may not be viable long-term
+  — the firmware likely needs to track a rolling/adaptive baseline
+  (recomputed every ~minute or so) and detect spikes *relative to that
+  baseline* rather than against a fixed ADC value. Not yet designed or
+  implemented — flagged here as the emerging direction suggested by today's
+  live-viewing session, to weigh against the trough/hysteresis mitigation
+  already discussed above.
