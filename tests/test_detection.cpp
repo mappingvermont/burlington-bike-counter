@@ -2,9 +2,9 @@
 #include "detection.h"
 
 // Advance time from `from` to `to` (inclusive) at a fixed ADC value.
-// Returns the last non-NONE event seen, or {DE_NONE, 0}.
+// Returns the last non-NONE event seen, or {DE_NONE, 0, 0}.
 static DetectionResult advance(Detection& d, unsigned long from, unsigned long to, int adc) {
-    DetectionResult last = {DE_NONE, 0};
+    DetectionResult last = {DE_NONE, 0, 0};
     for (unsigned long t = from; t <= to; t++) {
         auto r = d.tick(t, adc);
         if (r.type != DE_NONE) last = r;
@@ -12,13 +12,23 @@ static DetectionResult advance(Detection& d, unsigned long from, unsigned long t
     return last;
 }
 
-// All tests start pulses at t=200 to clear the initial COOLDOWN window
-// (lastCount initializes to 0; COOLDOWN_MS=200).
+// Detection now tracks an adaptive baseline (baseline + OFFSET) instead of a
+// fixed THRESHOLD, and fast-smooths the raw ADC value (FAST_ALPHA) before
+// comparing it to that threshold. baseline/smoothed both initialize from the
+// very first sample, so priming with a run of constant "quiet" samples pins
+// the baseline at that level. All tests start pulses at t=200 to clear the
+// initial COOLDOWN window (lastCount initializes to 0; COOLDOWN_MS=200).
+//
+// FAST_ALPHA is high enough (0.9) that smoothed settles to >90% of a step
+// change within a single sample, so pulse-boundary timing in these tests
+// matches what the raw signal would do. Exact smoothed peak values still lag
+// the raw peak slightly, so peak-value assertions use rawPeak, which tracks
+// the unsmoothed signal exactly.
 
 TEST_CASE("noise below threshold produces no event") {
     Detection d;
     for (unsigned long t = 0; t < 1000; t++) {
-        auto r = d.tick(t, THRESHOLD - 1);
+        auto r = d.tick(t, 50);  // constant "quiet" level; baseline locks to it
         REQUIRE(r.type == DE_NONE);
     }
     REQUIRE(d.bikeCount == 0);
@@ -116,10 +126,13 @@ TEST_CASE("peak value is tracked correctly across pulse") {
     advance(d, 0, 199, 0);
     d.tick(200, 80);
     d.tick(201, 90);
-    d.tick(202, 120);  // peak
+    d.tick(202, 120);  // raw peak
     d.tick(203, 85);
     d.tick(204, 0);    // pulse1End=204
     auto r = advance(d, 205, 205 + MAX_PAIR_GAP, 0);
     REQUIRE(r.type == DE_UNPAIRED);
-    REQUIRE(r.peak == 120);
+    // rawPeak tracks the unsmoothed signal exactly; peak (smoothed) lags it.
+    REQUIRE(r.rawPeak == 120);
+    REQUIRE(r.peak > OFFSET);
+    REQUIRE(r.peak <= r.rawPeak);
 }
