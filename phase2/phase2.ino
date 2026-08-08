@@ -15,7 +15,7 @@ bool sdOk = false;
 // checked on the display after a power cycle with no computer on site.
 // Then falls through into normal bike-counting mode for the rest of the
 // session.
-const unsigned long DEBUG_DURATION_MS = 5UL * 60 * 1000;
+const unsigned long DEBUG_DURATION_MS = 1UL * 60 * 1000;
 const unsigned long DEBUG_ADVERTISE_INTERVAL_MS = 200;
 bool debugMode = true;
 unsigned long lastDebugAdvertise = 0;
@@ -64,7 +64,7 @@ void setup() {
     f.flush();
     Serial.println("setup: SD ok");
   }
-  Serial.println("setup: ready, entering raw-pressure debug mode for 5 min");
+  Serial.println("setup: ready, entering raw-pressure debug mode for 1 min");
 }
 
 int lastResetMinute = -1;
