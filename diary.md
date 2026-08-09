@@ -59,3 +59,20 @@ This has been an expensive project ~ $800 likely all told. That being said it's 
 - Troubleshoot the sensor 'storm' issue and the display going blank
 - Get official permissions / understand why someone removed the strip
 - Try try again
+
+# 2026-08-09
+
+I've been doing some testing and observing a wild range of 'resting' pressure. Values from 30s all the way to the 700s.
+
+I now have a debug script that just prints the ADC value every 250ms to the display screen - it's been incredibly helpful to debug in real time. Stuff like "ok, how would the pressure change if the sensor was IN the pelican case?" and "what if I add this tube to the reference port?".
+
+My only thought here is that these spikes must be related to temperature. I was testing inside and getting pressure values in the 30s. I brought it out, put the sensor in a cardboard box and laid the tube on the hot drivway - immediately started seeing values in the 700s. It makes sense - it's a thin, black tube and the walls must change relative to temperature. Going from inside at 74 degrees to a hot driveway at 85 degrees is a big jump.
+
+My new approach is to compare any value to the previous ~10 seconds of values. I hope that this will allow us to filter out any spikes in pressure due to temperature / wind / whatever. If a reading is +40 above that baseline, it will count as a bike. We may need to remove that magic number in favor of a ratio instead- we'll see.
+
+I'm currently testing on the driveway wth the sensor in a cardboard box. It recorded the first 6 bike passes successfully, thank goodness. The real test now will be leaving it out for an hour and seeing if any 'phantom' bikes appear.
+
+If this works I'll try it in the pelican case next. And if not . . . measuring bikes with this setup may not be the best approach.
+
+
+
