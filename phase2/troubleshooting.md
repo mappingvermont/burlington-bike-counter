@@ -368,3 +368,76 @@ a post-hoc peak/trough log show up immediately as a live number.
   implemented — flagged here as the emerging direction suggested by today's
   live-viewing session, to weigh against the trough/hysteresis mitigation
   already discussed above.
+
+## System volatility review (2026-08-09): rebuild vs. power reconfiguration
+
+The adaptive-baseline detector (`OFFSET`-above-`baseline` in `detection.h`,
+the direction flagged in the section above) is now implemented and
+tuned down to `OFFSET = 20` / `MIN_PULSE_MS = 8` after several rounds of
+missed-bike and noise-storm tradeoffs. In the same session, several
+unrelated-looking symptoms showed up close together:
+
+- SD logging (`counts.csv`) failed completely for one session — 0 bytes,
+  not even the header row `setup()` always writes — with no code change in
+  the SD path to explain it. Most likely a rapid flash/reset cycle leaving
+  the card or SPI bus in a bad transient state, not a firmware regression.
+- A power-on analog transient: initial raw ADC readings in the 300s on the
+  first two of three rapid power cycles (within ~30s), back to a normal
+  ~40 on the third. Resolves with a longer power-off interval — consistent
+  with residual charge on decoupling/filter capacitors not fully bleeding
+  off between quick cycles, though not confirmed against the alternative
+  of internal sensor settling behavior.
+- Detection sensitivity has needed three rounds of threshold/timing
+  tuning (`OFFSET` 40→20, `MIN_PULSE_MS` 2→8) to reliably catch real bikes
+  without reopening the noise-storm problem documented above.
+
+None of these were traced to a single root cause. But several of them —
+the startup transient and the SD write failure in particular — are the
+kind of symptom a marginal/noisy power rail can produce simultaneously
+(both BLE radio bursts and SD writes are current spikes that can sag a
+weak supply, which can also disturb whatever the ADC is referencing).
+That's a hypothesis, not a diagnosis: no measurements have been taken to
+confirm it.
+
+### Does a rebuild make sense right now?
+
+Not yet. Nothing observed so far points at a specific failed/degrading
+part — the pattern is broad, low-grade flakiness across subsystems
+(analog, SD, BLE) rather than one component behaving consistently wrong.
+Rebuilding (~$84-105 reusing the existing SD card and battery — see
+`README.md` BOM) would mean guessing which part to replace without
+evidence it's the culprit, on hardware that mostly works: real bikes are
+being detected correctly at current settings once the startup window
+passes. Worth revisiting if a specific part starts showing consistent,
+reproducible failure (e.g. the startup transient recurs even after a full
+clean power-down, or SD writes fail more than once).
+
+### Power reconfiguration: a smaller purchase to validate before a rebuild, not a free alternative to one
+
+The MPX5010DP is currently run under-spec at 3.3V (community-proven
+workaround, per `phase1/README.md`) instead of its rated 5V, which
+compresses its output span to ~0.13-3.07V instead of the full ~0.2-4.7V.
+A smaller absolute signal window for the same real-world pressure change
+means worse signal-to-noise for a fixed amount of ADC/electrical noise —
+plausibly a contributing factor to how much threshold-tuning effort this
+project has needed across both the storm investigation above and today's
+sensitivity tuning.
+
+This is not a way to avoid spending money instead of rebuilding — it
+still requires buying parts, just fewer/cheaper ones, and it answers a
+different question than a rebuild does. A full rebuild
+(~$84-105, see above) replaces parts on a guess. This instead tests, on a
+separate breadboard rig (Phase-1-style — a spare MPX5010DP ~$25, a small
+5V boost converter breakout ~$5-10, two resistors, a multimeter; no
+soldering, and the deployed field unit is never touched), whether
+powering the sensor at its rated 5V with a resistor divider scaling
+`VOUT` back under the nRF52840's ADC-safe ~3.6V limit produces a cleaner
+signal than the current 3.3V under-volt. If it does, that's evidence
+worth acting on (redesign the sensor's power path); if it doesn't, that
+rules out supply voltage as a factor without having spent on a full
+rebuild first. Either way, money gets spent before an answer exists —
+this just spends less of it to get a narrower answer.
+
+Not yet attempted as of this writing. Not yet decided whether it's worth
+doing at all, given the added cost and effort on top of everything else
+this project has already required.
