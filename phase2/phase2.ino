@@ -9,6 +9,7 @@ RTC_DS3231 rtc;
 File f;
 Detection d;
 bool sdOk = false;
+const uint16_t SD_FAIL_VALUE = 8888;  // advertised at boot if SD init/open fails, so the display flags it without serial
 
 // Boot into raw-pressure debug mode (broadcasts live A0 reading, like
 // pressure_debug.ino) for DEBUG_DURATION_MS, so the tube/sensor can be
@@ -20,13 +21,12 @@ const unsigned long DEBUG_ADVERTISE_INTERVAL_MS = 200;
 bool debugMode = true;
 unsigned long lastDebugAdvertise = 0;
 
-// Near-miss diagnostic flash: briefly advertise a sentinel count so the
-// existing (unmodified) display renders it, then revert to the real count.
-// Relies on the display re-rendering on any count change.
-const uint16_t NEARMISS_FLASH_VALUE = 9999;
-const unsigned long NEARMISS_FLASH_MS = 1000;
-bool nearMissFlashing = false;
-unsigned long nearMissFlashUntil = 0;
+// After a bike count, briefly advertise the pulse's peak pressure reading
+// instead of the count, so the display shows it for a few seconds before
+// reverting. Relies on the display re-rendering on any count change.
+const unsigned long PRESSURE_DISPLAY_MS = 10000;
+bool showingPressure = false;
+unsigned long showPressureUntil = 0;
 
 void advertise(uint16_t val) {
   uint8_t mfr[4] = {0xFF, 0xFF, (uint8_t)(val & 0xFF), (uint8_t)(val >> 8)};
@@ -65,14 +65,28 @@ void setup() {
   Serial.println("setup: RTC ok");
   if (!SD.begin(10)) {
     Serial.println("setup: SD not found — logging to serial only");
+    advertise(SD_FAIL_VALUE);
   } else {
-    sdOk = true;
     f = SD.open("counts.csv", FILE_WRITE);
-    f.println("datetime,event,peak,rawPeak,count,baseline,smoothed");
-    f.flush();
-    Serial.println("setup: SD ok");
+    if (!f) {
+      Serial.println("setup: SD open failed — logging to serial only");
+      advertise(SD_FAIL_VALUE);
+    } else {
+      sdOk = true;
+      f.println("datetime,event,peak,rawPeak,count,baseline,smoothed");
+      f.flush();
+      Serial.println("setup: SD ok");
+    }
   }
-  Serial.println("setup: ready, entering raw-pressure debug mode for 1 min");
+
+  if (!sdOk) {
+    // Skip the raw-pressure debug window so the SD_FAIL_VALUE flash isn't
+    // immediately overwritten by live ADC readings.
+    debugMode = false;
+    Serial.println("setup: ready, SD unavailable — skipping debug window");
+  } else {
+    Serial.println("setup: ready, entering raw-pressure debug mode for 1 min");
+  }
 }
 
 void loop() {
@@ -96,24 +110,21 @@ void loop() {
 
   int val = analogRead(A0);
 
-  if (nearMissFlashing && now >= nearMissFlashUntil) {
-    nearMissFlashing = false;
+  if (showingPressure && now >= showPressureUntil) {
+    showingPressure = false;
     advertise(d.bikeCount);
   }
 
   DetectionResult result = d.tick(now, val);
   if (result.type == DE_PAIRED) {
-    nearMissFlashing = false;
-    advertise(d.bikeCount);
+    showingPressure = true;
+    showPressureUntil = now + PRESSURE_DISPLAY_MS;
+    advertise((uint16_t)result.peak);
     logEvent("bike", result.peak, result.rawPeak, d.baseline, d.smoothed);
   } else if (result.type == DE_UNPAIRED) {
-    nearMissFlashing = false;
-    advertise(d.bikeCount);
+    showingPressure = true;
+    showPressureUntil = now + PRESSURE_DISPLAY_MS;
+    advertise((uint16_t)result.peak);
     logEvent("single", result.peak, result.rawPeak, d.baseline, d.smoothed);
-  } else if (result.type == DE_NEARMISS) {
-    nearMissFlashing = true;
-    nearMissFlashUntil = now + NEARMISS_FLASH_MS;
-    advertise(NEARMISS_FLASH_VALUE);
-    logEvent("nearmiss", result.peak, result.rawPeak, d.baseline, d.smoothed);
   }
 }

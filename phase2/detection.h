@@ -1,16 +1,15 @@
 #pragma once
 #include <stdint.h>
 
-const float OFFSET      = 40.0f;
-const float WATCH_OFFSET = 20.0f;  // lower diagnostic line for near-miss logging; half of OFFSET
+const float OFFSET      = 20.0f;
 const float TAU_MS      = 10000.0f;
 const float FAST_ALPHA  = 0.9f;   // per-sample smoothing to reject single-sample ADC noise
-const int MIN_PULSE_MS = 2;
+const int MIN_PULSE_MS = 8;  // filters brief noise blips from opening a pairing window at the lower OFFSET
 const int MIN_PAIR_GAP = 70;
 const int MAX_PAIR_GAP = 500;
 const int COOLDOWN_MS  = 200;
 
-enum DetectionEvent { DE_NONE, DE_UNPAIRED, DE_PAIRED, DE_NEARMISS };
+enum DetectionEvent { DE_NONE, DE_UNPAIRED, DE_PAIRED };
 struct DetectionResult { DetectionEvent type; int peak; int rawPeak; };
 enum State { IDLE, IN_PULSE_1, BETWEEN, IN_PULSE_2 };
 
@@ -27,10 +26,6 @@ struct Detection {
     unsigned long lastBaselineUpdate = 0;
     bool baselineInit        = false;
     bool smoothedInit        = false;
-    bool watching            = false;
-    float watchPeak          = 0.0f;
-    int watchRawPeak         = 0;
-    unsigned long lastWatchLog = 0;
 
     DetectionResult tick(unsigned long now, int val) {
         if (!smoothedInit) {
@@ -58,7 +53,6 @@ struct Detection {
 
         bool above = smoothed > baseline + OFFSET;
         DetectionResult result = {DE_NONE, 0, 0};
-        State stateBefore = state;
 
         switch (state) {
             case IDLE:
@@ -113,34 +107,6 @@ struct Detection {
                     }
                 }
                 break;
-        }
-
-        // Diagnostic-only: track excursions that never reach OFFSET, so weak
-        // real events can be distinguished from noise without logging every
-        // sample. Only runs on ticks that stayed IDLE the whole time, so it
-        // never overlaps a real pulse in progress.
-        if (stateBefore == IDLE) {
-            if (state == IDLE) {
-                bool watchAbove = smoothed > baseline + WATCH_OFFSET;
-                if (watchAbove) {
-                    if (!watching) {
-                        watching = true;
-                        watchPeak = smoothed;
-                        watchRawPeak = val;
-                    } else {
-                        if (smoothed > watchPeak) watchPeak = smoothed;
-                        if (val > watchRawPeak) watchRawPeak = val;
-                    }
-                } else if (watching) {
-                    watching = false;
-                    if (now - lastWatchLog >= (unsigned long)COOLDOWN_MS) {
-                        lastWatchLog = now;
-                        result = {DE_NEARMISS, (int)watchPeak, watchRawPeak};
-                    }
-                }
-            } else {
-                watching = false;
-            }
         }
 
         return result;

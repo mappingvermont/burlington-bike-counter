@@ -37,7 +37,7 @@ TEST_CASE("noise below threshold produces no event") {
 
 TEST_CASE("pulse shorter than MIN_PULSE_MS is rejected") {
     Detection d;
-    // 1ms pulse — below MIN_PULSE_MS (2ms)
+    // 1ms pulse — below MIN_PULSE_MS (8ms)
     advance(d, 0, 199, 0);
     d.tick(200, 100);  // enter IN_PULSE_1 at t=200
     auto r = d.tick(201, 0);  // drop at t=201 — duration = 1ms < MIN_PULSE_MS
@@ -128,8 +128,12 @@ TEST_CASE("peak value is tracked correctly across pulse") {
     d.tick(201, 90);
     d.tick(202, 120);  // raw peak
     d.tick(203, 85);
-    d.tick(204, 0);    // pulse1End=204
-    auto r = advance(d, 205, 205 + MAX_PAIR_GAP, 0);
+    d.tick(204, 90);
+    d.tick(205, 80);
+    d.tick(206, 75);
+    d.tick(207, 70);
+    d.tick(208, 0);    // pulse1End=208 (duration 8ms, meets MIN_PULSE_MS)
+    auto r = advance(d, 209, 209 + MAX_PAIR_GAP, 0);
     REQUIRE(r.type == DE_UNPAIRED);
     // rawPeak tracks the unsmoothed signal exactly; peak (smoothed) lags it.
     REQUIRE(r.rawPeak == 120);
