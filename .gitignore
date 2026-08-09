@@ -6,3 +6,4 @@ memory/
 
 # device secrets — WiFi creds / web workflow password, never commit
 display/settings.toml
+display/__pycache__

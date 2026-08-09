@@ -20,6 +20,14 @@ const unsigned long DEBUG_ADVERTISE_INTERVAL_MS = 200;
 bool debugMode = true;
 unsigned long lastDebugAdvertise = 0;
 
+// Near-miss diagnostic flash: briefly advertise a sentinel count so the
+// existing (unmodified) display renders it, then revert to the real count.
+// Relies on the display re-rendering on any count change.
+const uint16_t NEARMISS_FLASH_VALUE = 9999;
+const unsigned long NEARMISS_FLASH_MS = 1000;
+bool nearMissFlashing = false;
+unsigned long nearMissFlashUntil = 0;
+
 void advertise(uint16_t val) {
   uint8_t mfr[4] = {0xFF, 0xFF, (uint8_t)(val & 0xFF), (uint8_t)(val >> 8)};
   Bluefruit.Advertising.stop();
@@ -88,12 +96,24 @@ void loop() {
 
   int val = analogRead(A0);
 
+  if (nearMissFlashing && now >= nearMissFlashUntil) {
+    nearMissFlashing = false;
+    advertise(d.bikeCount);
+  }
+
   DetectionResult result = d.tick(now, val);
   if (result.type == DE_PAIRED) {
+    nearMissFlashing = false;
     advertise(d.bikeCount);
     logEvent("bike", result.peak, result.rawPeak, d.baseline, d.smoothed);
   } else if (result.type == DE_UNPAIRED) {
+    nearMissFlashing = false;
     advertise(d.bikeCount);
     logEvent("single", result.peak, result.rawPeak, d.baseline, d.smoothed);
+  } else if (result.type == DE_NEARMISS) {
+    nearMissFlashing = true;
+    nearMissFlashUntil = now + NEARMISS_FLASH_MS;
+    advertise(NEARMISS_FLASH_VALUE);
+    logEvent("nearmiss", result.peak, result.rawPeak, d.baseline, d.smoothed);
   }
 }
