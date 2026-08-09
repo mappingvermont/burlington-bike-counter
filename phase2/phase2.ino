@@ -67,24 +67,6 @@ void setup() {
   Serial.println("setup: ready, entering raw-pressure debug mode for 1 min");
 }
 
-int lastResetMinute = -1;
-unsigned long lastResetCheck = 0;
-
-void checkReset(unsigned long now) {
-  if (now - lastResetCheck < 1800000) return;
-  lastResetCheck = now;
-  DateTime t = rtc.now();
-  if (t.hour() == 0 && t.minute() == 0 && lastResetMinute != 0) {
-    lastResetMinute = 0;
-    d.bikeCount = 0;
-    advertise(d.bikeCount);
-    logEvent("reset", 0, 0, d.baseline, d.smoothed);
-  }
-}
-
-const unsigned long SAMPLE_LOG_INTERVAL_MS = 250;
-unsigned long lastSampleLog = 0;
-
 void loop() {
   unsigned long now = millis();
 
@@ -93,7 +75,6 @@ void loop() {
       debugMode = false;
       Serial.println("debug window elapsed: switching to bike counting mode");
       advertise(d.bikeCount);
-      lastResetCheck = now;
       return;
     }
     if (now - lastDebugAdvertise >= DEBUG_ADVERTISE_INTERVAL_MS) {
@@ -106,7 +87,6 @@ void loop() {
   }
 
   int val = analogRead(A0);
-  checkReset(now);
 
   DetectionResult result = d.tick(now, val);
   if (result.type == DE_PAIRED) {
@@ -115,10 +95,5 @@ void loop() {
   } else if (result.type == DE_UNPAIRED) {
     advertise(d.bikeCount);
     logEvent("single", result.peak, result.rawPeak, d.baseline, d.smoothed);
-  }
-
-  if (now - lastSampleLog >= SAMPLE_LOG_INTERVAL_MS) {
-    lastSampleLog = now;
-    logEvent("sample", val, val, d.baseline, d.smoothed);
   }
 }
