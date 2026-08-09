@@ -2,7 +2,7 @@
 #include <stdint.h>
 
 const float OFFSET      = 20.0f;
-const float TAU_MS      = 10000.0f;
+const float TAU_MS      = 60000.0f;  // widened from 10s: baseline was reacting to sub-30s noise/thermal jitter, not just true drift
 const float FAST_ALPHA  = 0.9f;   // per-sample smoothing to reject single-sample ADC noise
 const int MIN_PULSE_MS = 8;  // filters brief noise blips from opening a pairing window at the lower OFFSET
 const int MIN_PAIR_GAP = 70;
