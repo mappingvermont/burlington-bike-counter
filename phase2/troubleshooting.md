@@ -441,3 +441,125 @@ this just spends less of it to get a narrower answer.
 Not yet attempted as of this writing. Not yet decided whether it's worth
 doing at all, given the added cost and effort on top of everything else
 this project has already required.
+
+## VENT.csv analysis (2026-08-11): venting didn't fix the dominant problem, it's solar/thermal drift, not just chatter
+
+A ~26hr capture from `phase2/vent_test/vent_test.ino` (10s-resolution
+`datetime,val,tempC`, no detection logic — just raw ADC + RTC temp), taken
+after the reference-port vent fix, shows the vent did not solve the
+dominant noise problem. In the main 6.5hr midday outdoor session
+(2026-08-11 09:42-16:14), raw ADC ranged 26-348 (mean ~168), with **87% of
+all samples above the old fixed `THRESHOLD=65`** and 81% above 90 (the old
+"storm band" ceiling). This is a different failure mode than the original
+2026-08-01/02 storm chatter documented above: instead of bursty spikes
+clustered in a few hours, this is a smooth, sustained daytime baseline
+elevation covering almost the entire session.
+
+Shape: rises from 47 to a peak of 348 over the first ~35min (9:42-10:17am,
+alongside RTC temp 27°C→37°C), plateaus through midday, then falls back to
+a 25-50 baseline by mid-afternoon — but the fall starts around noon while
+RTC temp keeps climbing to 45°C, so the two decouple (correlation over the
+whole session is ~0). Rising with morning sun but falling before ambient
+air temp does is more consistent with **direct solar loading on the case**
+(sun angle/exposure) than generic ambient thermal drift — the RTC chip,
+mounted inside with its own thermal mass, is a lagging proxy for whatever
+is actually driving the sensor, not a clean measurement of it.
+
+### Simulating the current adaptive detector against this data
+
+`phase2/detection.h` no longer uses a fixed `THRESHOLD` — it tracks a
+baseline via EMA (`TAU_MS=60000`, i.e. ~1min time constant) and fires when
+`smoothed > baseline + OFFSET` (`OFFSET=20`). Replaying that exact formula
+against the 10s-resolution VENT.csv data (session 4) produces **47
+separate false "above" excursions across the 6.5hr session**, spread
+roughly every 5-15 minutes throughout the whole day (not just during the
+steep morning ramp), each lasting 10-130s. Confirmed by direct observation
+(not just the 10s samples) that these are genuinely smooth, sustained
+rises at that timescale — not sub-second chatter being aliased down by
+coarse sampling. That matters: it means a duration-based fix (below) is
+mechanically sound against this specific noise, since the excursions
+really do stay continuously elevated rather than flickering in and out.
+
+Parameter sweeps on this data:
+- **Raising `OFFSET`** (holding `TAU_MS=60000`): 20→47 runs, 30→15, 40→3,
+  **60→0**. `OFFSET=60` eliminates every false crossing in this dataset.
+- **Raising `TAU_MS`** (holding `OFFSET=20`) makes it *worse*, not better —
+  60s→47 runs, 300s→65 runs, 1800s→47 runs but with much longer individual
+  runs (up to 2800s). A slower baseline lags the diurnal drift more, so
+  residuals grow larger and stay large longer. Lengthening `TAU_MS` is the
+  wrong direction for this problem.
+
+Caveat on `OFFSET=60`: the old open-air characterization (`CLAUDE.md`)
+recorded the weakest real bike event at only ~34 above the noise floor.
+That number predates both the vent fix and the current mount, so it's not
+a reliable yardstick anymore — but until it's re-measured, raising
+`OFFSET` that high risks trading false positives for false negatives on
+weak/slow-rider events. See "Second-round capture" below for how we plan
+to get a current number instead of guessing.
+
+### Pairing can't be used to filter this noise
+
+Front/rear wheel pairing (`MIN_PAIR_GAP`/`MAX_PAIR_GAP`) can't distinguish
+real bikes from noise here: fast riders often produce only a single
+detected pulse, so an "unpaired" single event is common and legitimate,
+not inherently suspicious. Any noise-mitigation approach needs a signal
+other than pairing.
+
+### The duration-cap idea, and its blind spot
+
+Since noise excursions are confirmed smooth/sustained (not chatter), a
+`MAX_PULSE_MS` cap on top of the existing `above` logic — discard a pulse
+if it's stayed continuously "above" longer than a real wheel crossing ever
+could — is mechanically sound *against noise in isolation*. But it has a
+real blind spot: if a bike crosses the tube *while* a noise excursion is
+already active, `above` is already true and doesn't flip false→true when
+the bike arrives, so the state machine never sees a new pulse start — the
+bike just nudges `pulsePeak` inside the same segment that gets discarded
+once the duration cap trips. A cap alone risks silently swallowing real
+bikes during exactly the worst-noise windows, trading one failure mode for
+another rather than fixing it.
+
+### Second-round capture: what it will and won't tell us
+
+`vent_test.ino` was updated and reflashed (2026-08-11): `LOG_INTERVAL_MS`
+10000→200 (5 samples/sec), plus a new `ms` column (`millis()` since boot)
+because the RTC only resolves to whole seconds and can't order/space
+multiple same-second samples. Header is now `datetime,ms,val,tempC`. Plan
+is to deploy to the driveway for a several-hour sunny session with roughly
+hourly ride-overs, not timed to coincide with a noise excursion (with only
+one physical unit, an engineered overlap isn't practical, but a several-
+hour session with an excursion roughly every 5-15 minutes makes catching
+one incidentally reasonably likely).
+
+What this data answers, concretely:
+
+- **Real bike pulse duration and rise-rate (ADC/ms) for the first time at
+  real resolution.** This is what actually sizes `MAX_PULSE_MS` (or a
+  rate-of-rise gate) instead of guessing — right now there's no measured
+  bike shape to design against, only a stale absolute-peak number from
+  years-old open-air characterization.
+- **Real peak delta above baseline for captured bikes.** Directly
+  validates or kills any candidate `OFFSET` value (e.g. `OFFSET=40`,
+  `OFFSET=60` above): if captured bikes clip below the OFFSET being
+  considered, it's too high; if they clear it with margin, it's safe.
+  Replaces the stale 34-delta number with a current, post-vent,
+  current-mount measurement.
+- **Real noise-excursion duration and rise-rate at true resolution**
+  (rather than the 10s-aliased estimate above), to check whether bike and
+  noise shapes actually separate cleanly or overlap — if they overlap,
+  duration alone won't discriminate and something else (rate-of-rise, or
+  abandoning the duration-cap approach entirely) is needed.
+- **If a captured ride-over happens to land during an active noise
+  excursion:** whether the bike is still visible as a distinct feature on
+  top of the elevated/lagging signal (by rate-of-rise, or by delta above
+  the *recent local* level rather than the slow 60s baseline). If yes,
+  that's the evidence needed to build a nested detector that keeps
+  counting through noise instead of discarding whole noisy windows. If the
+  bike is fully absorbed with no visible feature, that tells us this
+  specific failure mode isn't recoverable with any threshold-based
+  approach on this signal — pointing back toward a hardware-level
+  mitigation or an accepted undercount during noise windows, not more
+  firmware tuning.
+
+Not yet run as of this writing — device is flashed and ready, pending a
+driveway deployment.
