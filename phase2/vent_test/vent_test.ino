@@ -16,8 +16,8 @@ RTC_DS3231 rtc;
 File f;
 bool sdOk = false;
 const uint16_t SD_WAITING_VALUE = 0;      // held on display while boot checks are still running
-const uint16_t SD_FAIL_VALUE    = 8888;   // held on display if SD write can't be verified
-const uint16_t SD_OK_VALUE      = 9999;   // held on display once SD write is verified
+const uint16_t SD_FAIL_VALUE    = 9999;   // held on display if SD write can't be verified
+const uint16_t SD_OK_VALUE      = 1111;   // held on display once SD write is verified
 const unsigned long SD_OK_HOLD_MS      = 2000;  // short since it's just a confirmation
 const unsigned long SD_FAIL_HOLD_MS    = 8000;  // long since this one demands action
 const unsigned long SD_WAITING_HOLD_MS = 1500;  // checks below run in ms otherwise — needs its own floor to be seen at all

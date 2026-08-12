@@ -74,5 +74,37 @@ I'm currently testing on the driveway wth the sensor in a cardboard box. It reco
 
 If this works I'll try it in the pelican case next. And if not . . . measuring bikes with this setup may not be the best approach.
 
+# 2026-08-12
+
+I've been testing and testing. Today I followed the latest claude testing protocal - detailed in phase2/vent_test/vent_test.ino - to try and capture sub-second changes while riding over stuff.
+
+I've had issues with SD card writes, so now I log a 9999 (card working) and 8888 (card not working) to the display for the first few seconds, just to make sure things are set up correctly.
+
+I mixed these values up on initial setup today. Maybe it's my time in GIS, but 9999 always seems like bad / no data. I interpreted that as SD card not working, when in reality it was working fine. I power cycled a few times until I got 8888 (the wrong value to request here, but I thought it was right). I then tested each hour - riding my bike at six places. Of course when I pulled the card . . . no data.
+
+What a nightmare. This hardware stuff is harder than it looks! My god.
+
+To try and salvage something from this test I will say:
+
+- 8:47
+  - 4/6 saw visible jumps in the monitor
+  - unclear if those that didn't were just due to display timing? idk
+  - values were around 150 at that time
+- 10:09
+  - values range from 300 to 330
+  - saw a few jump from 330 to 360, but honestly that's not gonna cut it
+- 10:46
+  - values around 300
+  - a few saw values jump to 400 or so
+  - but also some with a +20 jump which does not seem recordable
+- 11:47
+  - values 25-35
+  - still warm but now very cloudy instead of sun
+  - SO interesting though -> at no point did any of my riding over seem to register
+  - this is honestly the real issue / weirdness
+- 12:47
+  - same as above
+
+After the test ended I unplugged the tube, then reseated it and was able to register visible pulses again. so interesting (shitty) that it can get into these states where it doesn't register any pressure change, even though the baseline ADC is so low (theoretically what we want). Man.
 
 
